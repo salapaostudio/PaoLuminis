@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
 import { generateStructuredReflection } from "@/lib/ai/gemini";
+import { apiError } from "@/lib/api";
 import { getReflectionContext, getUserOrThrow } from "@/lib/context";
 import { checkSafety } from "@/lib/safety/check";
 import { checkUsageLimit, recordUsage } from "@/lib/usage";
+import { askSchema, zodErrorMessage } from "@/lib/validation";
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { category?: string; question?: string };
-    const question = String(body.question ?? "").trim();
-    const category = String(body.category ?? "self");
+    const parsed = askSchema.safeParse(await request.json());
+    if (!parsed.success) return NextResponse.json({ error: zodErrorMessage(parsed.error) }, { status: 400 });
+
+    const { category, question } = parsed.data;
     const { supabase, user } = await getUserOrThrow();
 
     const safety = checkSafety(`${category}\n${question}`);
@@ -21,6 +24,15 @@ export async function POST(request: Request) {
         action_taken: "blocked",
       });
       return NextResponse.json({ error: safety.message, safety }, { status: 400 });
+    }
+    if (safety.status === "caution") {
+      await supabase.from("safety_logs").insert({
+        user_id: user.id,
+        input_text: question,
+        risk_type: safety.riskType,
+        severity: safety.severity,
+        action_taken: "caution_reflective_only",
+      });
     }
 
     const usage = await checkUsageLimit(user.id, "ask_ai");
@@ -57,6 +69,6 @@ export async function POST(request: Request) {
     await recordUsage(user.id, "ask_ai", { reading_id: reading.id, question_id: savedQuestion.id });
     return NextResponse.json({ reading, question: savedQuestion });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Unexpected error" }, { status: 500 });
+    return apiError(error);
   }
 }

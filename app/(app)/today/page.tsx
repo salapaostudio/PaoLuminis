@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { DailyLightPanel } from "@/components/ai-panels";
 import { Card, ReflectionView } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
@@ -32,7 +33,18 @@ export default async function TodayPage() {
         <p className="text-sm font-semibold text-gold">{formatThaiDate(new Date())}</p>
         <h1 className="mt-2 text-3xl font-semibold text-midnight">Daily Light ของ{profile.nickname ?? "คุณ"}</h1>
       </div>
-      <Card>{daily ? <ReflectionView content={daily.content as Record<string, unknown>} /> : <DailyLightPanel />}</Card>
+      <Card>
+        {daily ? (
+          <div className="grid gap-4">
+            <ReflectionView content={daily.content as Record<string, unknown>} />
+            <Link className="w-fit rounded-full border border-midnight/15 bg-white/70 px-4 py-2 text-sm font-semibold text-midnight" href={`/saved?reading_id=${daily.id}`}>
+              บันทึก insight นี้
+            </Link>
+          </div>
+        ) : (
+          <DailyLightPanel />
+        )}
+      </Card>
     </div>
   );
 }

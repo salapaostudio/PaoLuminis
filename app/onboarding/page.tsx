@@ -13,7 +13,12 @@ const intentions = [
   ["other", "อื่น ๆ"],
 ];
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ message?: string }>;
+}) {
+  const params = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -25,6 +30,7 @@ export default async function OnboardingPage() {
       <Card>
         <h1 className="text-3xl font-semibold text-midnight">เริ่มรู้จักแสงของคุณ</h1>
         <p className="mt-3 text-sm leading-6 text-midnight/70">ข้อมูลนี้ช่วยให้คำสะท้อนนุ่มนวลและเข้ากับบริบทชีวิตของคุณมากขึ้น</p>
+        {params.message ? <p className="mt-4 rounded-[8px] bg-mist p-3 text-sm text-midnight/75">{params.message}</p> : null}
         <form action={completeOnboarding} className="mt-6 grid gap-4">
           <Field label="ชื่อเล่น">
             <input className={inputClass} name="nickname" required />

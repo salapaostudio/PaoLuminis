@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { generateStructuredReflection } from "@/lib/ai/gemini";
+import { apiError } from "@/lib/api";
 import { getReflectionContext, getUserOrThrow } from "@/lib/context";
 import { checkUsageLimit, recordUsage } from "@/lib/usage";
 
@@ -25,6 +26,6 @@ export async function POST() {
     await recordUsage(user.id, "daily_light", { reading_id: data.id });
     return NextResponse.json({ reading: data });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Unexpected error" }, { status: 500 });
+    return apiError(error);
   }
 }

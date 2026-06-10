@@ -6,7 +6,7 @@ import { saveInsight } from "../actions";
 export default async function SavedPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reading_id?: string }>;
+  searchParams: Promise<{ reading_id?: string; message?: string }>;
 }) {
   const params = await searchParams;
   const supabase = await createClient();
@@ -26,28 +26,33 @@ export default async function SavedPage({
         <p className="text-sm font-semibold text-gold">Saved Insights</p>
         <h1 className="mt-2 text-3xl font-semibold text-midnight">แสงที่อยากเก็บไว้กลับมาอ่าน</h1>
       </div>
+      {params.message ? <p className="rounded-[8px] bg-mist p-3 text-sm text-midnight/75">{params.message}</p> : null}
       {params.reading_id ? (
         <Card>
           <form action={saveInsight} className="grid gap-4">
             <input type="hidden" name="reading_id" value={params.reading_id} />
-            <Field label="label">
+            <Field label="ชื่อ insight">
               <input className={inputClass} name="label" defaultValue="แสงที่อยากเก็บไว้" />
             </Field>
-            <Field label="note">
+            <Field label="โน้ตส่วนตัว">
               <textarea className={inputClass} name="note" rows={3} />
             </Field>
-            <SubmitButton>Save insight</SubmitButton>
+            <SubmitButton>บันทึก insight</SubmitButton>
           </form>
         </Card>
       ) : null}
       <div className="grid gap-4">
-        {saved?.map((item) => (
+        {saved && saved.length > 0 ? saved.map((item) => (
           <Card key={item.id}>
             <p className="text-sm font-semibold text-gold">{item.label ?? "Saved insight"} · {formatThaiDate(item.created_at)}</p>
             {item.note ? <p className="mt-2 text-sm text-midnight/60">{item.note}</p> : null}
             {item.readings?.content ? <div className="mt-4"><ReflectionView content={item.readings.content as Record<string, unknown>} /></div> : null}
           </Card>
-        ))}
+        )) : (
+          <Card>
+            <p className="text-sm leading-6 text-midnight/70">ยังไม่มี insight ที่บันทึกไว้ เมื่อเจอคำสะท้อนที่อยากกลับมาอ่าน ให้กดบันทึกจาก Daily Light, Ask AI หรือ Symbol Card ได้เลย</p>
+          </Card>
+        )}
       </div>
     </div>
   );

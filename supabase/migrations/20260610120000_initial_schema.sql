@@ -151,8 +151,28 @@ create policy "questions own update" on public.questions for update using (auth.
 create policy "questions own delete" on public.questions for delete using (auth.uid() = user_id);
 
 create policy "readings own select" on public.readings for select using (auth.uid() = user_id);
-create policy "readings own insert" on public.readings for insert with check (auth.uid() = user_id);
-create policy "readings own update" on public.readings for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "readings own insert" on public.readings for insert with check (
+  auth.uid() = user_id
+  and (
+    question_id is null
+    or exists (
+      select 1 from public.questions
+      where questions.id = readings.question_id
+      and questions.user_id = auth.uid()
+    )
+  )
+);
+create policy "readings own update" on public.readings for update using (auth.uid() = user_id) with check (
+  auth.uid() = user_id
+  and (
+    question_id is null
+    or exists (
+      select 1 from public.questions
+      where questions.id = readings.question_id
+      and questions.user_id = auth.uid()
+    )
+  )
+);
 create policy "readings own delete" on public.readings for delete using (auth.uid() = user_id);
 
 create policy "journals own select" on public.journals for select using (auth.uid() = user_id);
@@ -161,20 +181,68 @@ create policy "journals own update" on public.journals for update using (auth.ui
 create policy "journals own delete" on public.journals for delete using (auth.uid() = user_id);
 
 create policy "journal reflections own select" on public.journal_reflections for select using (auth.uid() = user_id);
-create policy "journal reflections own insert" on public.journal_reflections for insert with check (auth.uid() = user_id);
-create policy "journal reflections own update" on public.journal_reflections for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "journal reflections own insert" on public.journal_reflections for insert with check (
+  auth.uid() = user_id
+  and exists (
+    select 1 from public.journals
+    where journals.id = journal_reflections.journal_id
+    and journals.user_id = auth.uid()
+  )
+);
+create policy "journal reflections own update" on public.journal_reflections for update using (auth.uid() = user_id) with check (
+  auth.uid() = user_id
+  and exists (
+    select 1 from public.journals
+    where journals.id = journal_reflections.journal_id
+    and journals.user_id = auth.uid()
+  )
+);
 create policy "journal reflections own delete" on public.journal_reflections for delete using (auth.uid() = user_id);
 
 create policy "saved insights own select" on public.saved_insights for select using (auth.uid() = user_id);
-create policy "saved insights own insert" on public.saved_insights for insert with check (auth.uid() = user_id);
-create policy "saved insights own update" on public.saved_insights for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "saved insights own insert" on public.saved_insights for insert with check (
+  auth.uid() = user_id
+  and exists (
+    select 1 from public.readings
+    where readings.id = saved_insights.reading_id
+    and readings.user_id = auth.uid()
+  )
+);
+create policy "saved insights own update" on public.saved_insights for update using (auth.uid() = user_id) with check (
+  auth.uid() = user_id
+  and exists (
+    select 1 from public.readings
+    where readings.id = saved_insights.reading_id
+    and readings.user_id = auth.uid()
+  )
+);
 create policy "saved insights own delete" on public.saved_insights for delete using (auth.uid() = user_id);
 
 create policy "tarot cards authenticated read" on public.tarot_cards for select using (auth.role() = 'authenticated');
 
 create policy "tarot draws own select" on public.tarot_draws for select using (auth.uid() = user_id);
-create policy "tarot draws own insert" on public.tarot_draws for insert with check (auth.uid() = user_id);
-create policy "tarot draws own update" on public.tarot_draws for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "tarot draws own insert" on public.tarot_draws for insert with check (
+  auth.uid() = user_id
+  and (
+    reading_id is null
+    or exists (
+      select 1 from public.readings
+      where readings.id = tarot_draws.reading_id
+      and readings.user_id = auth.uid()
+    )
+  )
+);
+create policy "tarot draws own update" on public.tarot_draws for update using (auth.uid() = user_id) with check (
+  auth.uid() = user_id
+  and (
+    reading_id is null
+    or exists (
+      select 1 from public.readings
+      where readings.id = tarot_draws.reading_id
+      and readings.user_id = auth.uid()
+    )
+  )
+);
 create policy "tarot draws own delete" on public.tarot_draws for delete using (auth.uid() = user_id);
 
 create policy "usage own select" on public.usage_events for select using (auth.uid() = user_id);

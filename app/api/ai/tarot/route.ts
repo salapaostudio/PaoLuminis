@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
 import { generateStructuredReflection } from "@/lib/ai/gemini";
+import { apiError } from "@/lib/api";
 import { getReflectionContext, getUserOrThrow } from "@/lib/context";
 import { checkSafety } from "@/lib/safety/check";
 import { checkUsageLimit, recordUsage } from "@/lib/usage";
+import { tarotSchema, zodErrorMessage } from "@/lib/validation";
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { cardId?: string; intention?: string };
-    const intention = String(body.intention ?? "").trim();
+    const parsed = tarotSchema.safeParse(await request.json());
+    if (!parsed.success) return NextResponse.json({ error: zodErrorMessage(parsed.error) }, { status: 400 });
+
+    const { cardId, intention } = parsed.data;
     const { supabase, user } = await getUserOrThrow();
     const usage = await checkUsageLimit(user.id, "tarot");
     if (!usage.allowed) return NextResponse.json({ error: "วันนี้จั่ว Symbol Card ครบ 3 ครั้งแล้ว ลองอยู่กับไพ่ใบล่าสุดก่อนนะ" }, { status: 429 });
@@ -17,9 +21,12 @@ export async function POST(request: Request) {
       await supabase.from("safety_logs").insert({ user_id: user.id, input_text: intention, risk_type: safety.riskType, severity: safety.severity, action_taken: "blocked" });
       return NextResponse.json({ error: safety.message, safety }, { status: 400 });
     }
+    if (safety.status === "caution") {
+      await supabase.from("safety_logs").insert({ user_id: user.id, input_text: intention, risk_type: safety.riskType, severity: safety.severity, action_taken: "caution_reflective_only" });
+    }
 
     const cardQuery = supabase.from("tarot_cards").select("*");
-    const { data: cards, error: cardError } = body.cardId ? await cardQuery.eq("id", body.cardId).limit(1) : await cardQuery;
+    const { data: cards, error: cardError } = cardId ? await cardQuery.eq("id", cardId).limit(1) : await cardQuery;
     if (cardError) throw cardError;
     const card = cards?.[Math.floor(Math.random() * cards.length)];
     if (!card) return NextResponse.json({ error: "ยังไม่มี symbolic cards ในฐานข้อมูล กรุณารัน migration seed ก่อน" }, { status: 400 });
@@ -47,6 +54,6 @@ export async function POST(request: Request) {
     await recordUsage(user.id, "tarot", { reading_id: reading.id, card_id: card.id });
     return NextResponse.json({ reading, draw, card });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Unexpected error" }, { status: 500 });
+    return apiError(error);
   }
 }

@@ -3,6 +3,15 @@
 import { useState, useTransition } from "react";
 import { ReflectionView } from "@/components/ui";
 
+const categoryLabels = [
+  ["love", "ความรัก"],
+  ["career", "งาน"],
+  ["money", "เงิน"],
+  ["self", "ตัวเอง"],
+  ["decision", "การตัดสินใจ"],
+  ["timing", "จังหวะเวลา"],
+] as const;
+
 type ApiState = {
   reading?: { id: string; content: Record<string, unknown>; title?: string };
   card?: { name: string; archetype: string };
@@ -40,7 +49,7 @@ export function DailyLightPanel() {
           })
         }
       >
-        {pending ? "กำลังเปิดแสง..." : "Generate Daily Light"}
+        {pending ? "กำลังเปิดแสง..." : "สร้าง Daily Light"}
       </button>
       {state.error ? <p className="rounded-[8px] bg-white/70 p-3 text-sm text-red-700">{state.error}</p> : null}
       {state.reading ? <ReflectionView content={state.reading.content} /> : null}
@@ -74,15 +83,15 @@ export function AskPanel() {
       }}
     >
       <select name="category" className="rounded-[8px] border border-midnight/10 bg-white/80 px-4 py-3">
-        {["love", "career", "money", "self", "decision", "timing"].map((value) => (
+        {categoryLabels.map(([value, label]) => (
           <option key={value} value={value}>
-            {value}
+            {label}
           </option>
         ))}
       </select>
       <textarea name="question" required rows={5} className="rounded-[8px] border border-midnight/10 bg-white/80 px-4 py-3" placeholder="ถามสิ่งที่อยากสะท้อนใจ..." />
       <button className="rounded-full bg-midnight px-5 py-3 text-sm font-semibold text-cream shadow-glow disabled:opacity-60" disabled={pending}>
-        {pending ? "กำลังสะท้อน..." : "Ask AI"}
+        {pending ? "กำลังสะท้อน..." : "ถาม AI"}
       </button>
       {state.error ? <p className="rounded-[8px] bg-white/70 p-3 text-sm text-red-700">{state.error}</p> : null}
       {state.reading ? <ReflectionView content={state.reading.content} /> : null}
@@ -112,7 +121,7 @@ export function TarotPanel() {
           })
         }
       >
-        {pending ? "กำลังจั่ว..." : "Draw Symbol Card"}
+        {pending ? "กำลังจั่ว..." : "จั่ว Symbol Card"}
       </button>
       {state.card ? <p className="rounded-[8px] bg-mist p-4 font-semibold text-midnight">{state.card.name} · {state.card.archetype}</p> : null}
       {state.error ? <p className="rounded-[8px] bg-white/70 p-3 text-sm text-red-700">{state.error}</p> : null}
@@ -122,7 +131,7 @@ export function TarotPanel() {
   );
 }
 
-export function JournalReflectButton({ journalId, body }: { journalId: string; body: string }) {
+export function JournalReflectButton({ journalId }: { journalId: string }) {
   const [state, setState] = useState<ApiState>({});
   const [pending, startTransition] = useTransition();
 
@@ -134,7 +143,7 @@ export function JournalReflectButton({ journalId, body }: { journalId: string; b
         onClick={() =>
           startTransition(async () => {
             try {
-              setState(await postJson("/api/ai/journal-reflect", { journalId, body }));
+              setState(await postJson("/api/ai/journal-reflect", { journalId }));
             } catch (error) {
               setState({ error: error instanceof Error ? error.message : "เกิดข้อผิดพลาด" });
             }
@@ -145,6 +154,7 @@ export function JournalReflectButton({ journalId, body }: { journalId: string; b
       </button>
       {state.error ? <p className="rounded-[8px] bg-white/70 p-3 text-sm text-red-700">{state.error}</p> : null}
       {state.reflection ? <ReflectionView content={state.reflection.content} /> : null}
+      {state.reading ? <SaveReadingForm readingId={state.reading.id} /> : null}
     </div>
   );
 }

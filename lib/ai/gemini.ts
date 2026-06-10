@@ -26,15 +26,16 @@ export async function generateStructuredReflection({ task, prompt, userContext, 
     };
   }
 
-  const ai = new GoogleGenAI({ apiKey });
-  const response = await ai.models.generateContent({
-    model: selectedModel,
-    contents: [
-      {
-        role: "user",
-        parts: [
-          {
-            text: `${BRAND_SYSTEM_PROMPT}
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+    const response = await ai.models.generateContent({
+      model: selectedModel,
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              text: `${BRAND_SYSTEM_PROMPT}
 
 รูปแบบ JSON ที่ต้องตอบ:
 ${JSON.stringify(responseShapes[task])}
@@ -44,18 +45,24 @@ ${JSON.stringify(userContext ?? {})}
 
 โจทย์:
 ${prompt}`,
-          },
-        ],
+            },
+          ],
+        },
+      ],
+      config: {
+        temperature: 0.75,
+        responseMimeType: "application/json",
       },
-    ],
-    config: {
-      temperature: 0.75,
-      responseMimeType: "application/json",
-    },
-  });
+    });
 
-  const text = response.text ?? "";
-  return { content: parseJsonOrFallback(task, text), modelUsed: selectedModel };
+    const text = response.text ?? "";
+    return { content: parseJsonOrFallback(task, text), modelUsed: selectedModel };
+  } catch {
+    return {
+      content: fallbackContent(task, "ระบบ AI ขัดข้องชั่วคราว จึงใช้ข้อความสะท้อนใจแบบปลอดภัยแทน"),
+      modelUsed: "fallback-error",
+    };
+  }
 }
 
 function parseJsonOrFallback(task: ReflectionTask, text: string) {

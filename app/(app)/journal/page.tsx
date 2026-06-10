@@ -43,14 +43,18 @@ export default async function JournalPage({
         {params.message ? <p className="mt-4 rounded-[8px] bg-mist p-3 text-sm text-midnight/75">{params.message}</p> : null}
       </Card>
       <div className="grid gap-4">
-        {journals?.map((journal) => (
+        {journals && journals.length > 0 ? journals.map((journal) => (
           <Card key={journal.id}>
             <p className="text-sm font-semibold text-gold">{formatThaiDate(journal.created_at)}</p>
             {journal.prompt ? <p className="mt-2 text-sm text-midnight/60">{journal.prompt}</p> : null}
             <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-midnight/75">{journal.body}</p>
-            <JournalReflectButton journalId={journal.id} body={journal.body} />
+            <JournalReflectButton journalId={journal.id} />
           </Card>
-        ))}
+        )) : (
+          <Card>
+            <p className="text-sm leading-6 text-midnight/70">ยังไม่มี journal แรก ลองเขียนสั้น ๆ ว่าวันนี้ใจของคุณกำลังถืออะไรอยู่ก็พอ</p>
+          </Card>
+        )}
       </div>
     </div>
   );

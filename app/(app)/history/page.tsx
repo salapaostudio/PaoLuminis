@@ -21,7 +21,7 @@ export default async function HistoryPage() {
         <h1 className="mt-2 text-3xl font-semibold text-midnight">ประวัติคำสะท้อน</h1>
       </div>
       <div className="grid gap-4">
-        {readings?.map((reading) => (
+        {readings && readings.length > 0 ? readings.map((reading) => (
           <Card key={reading.id}>
             <p className="text-sm font-semibold text-gold">{reading.type} · {formatThaiDate(reading.created_at)}</p>
             <h2 className="mt-1 text-xl font-semibold text-midnight">{reading.title ?? "Reflection"}</h2>
@@ -29,7 +29,11 @@ export default async function HistoryPage() {
               <ReflectionView content={reading.content as Record<string, unknown>} />
             </div>
           </Card>
-        ))}
+        )) : (
+          <Card>
+            <p className="text-sm leading-6 text-midnight/70">ยังไม่มีประวัติคำสะท้อน ลองเริ่มจาก Daily Light วันนี้ หรือถาม Ask AI ด้วยคำถามที่ใจอยากสำรวจ</p>
+          </Card>
+        )}
       </div>
     </div>
   );
