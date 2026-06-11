@@ -45,7 +45,7 @@ export default async function HistoryPage() {
           </section>
         )) : (
           <Card>
-            <p className="text-sm leading-6 text-midnight/70">ยังไม่มีประวัติคำสะท้อน ลองเริ่มจากแสงวันนี้ หรือถาม Luminis ด้วยคำถามที่ใจอยากสำรวจ</p>
+            <p className="text-sm leading-6 text-midnight/70">ยังไม่มีประวัติคำสะท้อน ลองเริ่มจากแสงวันนี้ หรือเปิดแสงนำทางด้วยคำถามที่ใจอยากสำรวจ</p>
           </Card>
         )}
       </div>

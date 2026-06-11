@@ -13,7 +13,7 @@ Users can:
 - Sign in with email magic link.
 - Complete a short onboarding profile.
 - Generate one personalized **Daily Light** per day.
-- Ask AI reflective questions.
+- Ask AI reflective questions through multiple reading modes.
 - Draw one symbolic card and receive a gentle reflection.
 - Write journal entries and ask AI to reflect on them.
 - Save meaningful insights.
@@ -80,10 +80,33 @@ Route: `/today`
 
 Route: `/ask`
 
-- User chooses a category and asks a question.
-- Server validates input, checks safety, retrieves user context, calls Gemini, and saves the response.
+- User chooses a reading mode and category, then asks a question or shares context.
+- Server validates input with zod, checks safety, retrieves user context, calls Gemini, and saves the response.
 - Saves the question in `questions`.
-- Saves the answer in `readings` with `type = ask_ai`.
+- Saves the answer in `readings` with the selected reading mode as `type`.
+
+### Reading Modes
+
+Route: `/ask` and `app/api/readings/generate`
+
+Supported modes include:
+
+- ไพ่สะท้อนใจ
+- Oracle Message
+- โหราศาสตร์สะท้อนตัวตน
+- เลขศาสตร์ชีวิต
+- วิเคราะห์ชื่อเชิงความหมาย
+- ทักษาปกรณ์
+- วิเคราะห์เบอร์เชิงพลังงาน
+- ฮวงจุ้ยเชิงบรรยากาศ
+- I Ching Reflection
+- Human Design Reflection
+- เพื่อนช่วยตัดสินใจ
+- กระจกความสัมพันธ์
+- เข็มทิศเรื่องงาน
+- ความสัมพันธ์กับเงิน
+
+Each mode uses a centralized config, tone profile, safety note, and structured JSON response so the reading stays warm, reflective, and non-deterministic.
 
 ### Symbol Card
 
@@ -144,6 +167,8 @@ app/
       daily-light/
       journal-reflect/
       tarot/
+    readings/
+      generate/
   auth/
     callback/
   login/
@@ -159,6 +184,11 @@ components/
 
 lib/
   ai/
+    reading-modes.ts
+    reading-prompts.ts
+    reading-schema.ts
+    reading-style.ts
+    safety-rules.ts
     gemini.ts
   prompts/
     system.ts
@@ -214,6 +244,7 @@ Notes:
 - `GEMINI_API_KEY` must never be exposed to the browser.
 - `ADMIN_EMAILS` is a comma-separated list, for example `founder@example.com,admin@example.com`.
 - `APP_TIMEZONE` controls daily usage reset boundaries. The MVP default is `Asia/Bangkok`.
+- Reading-mode prompts and structured output are centralized in `lib/ai/reading-*.ts`.
 - `.env.local` is ignored by git.
 - `.env.example` must contain placeholders only, never real secrets.
 

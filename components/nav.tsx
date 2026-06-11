@@ -3,10 +3,10 @@ import { signOut } from "@/app/(app)/actions";
 
 const links = [
   ["/today", "แสงวันนี้"],
-  ["/ask", "ถาม Luminis"],
-  ["/tarot", "การ์ดสัญลักษณ์"],
+  ["/ask", "แสงนำทาง"],
+  ["/tarot", "ไพ่สะท้อนใจ"],
   ["/journal", "บันทึกใจ"],
-  ["/saved", "ที่บันทึกไว้"],
+  ["/saved", "สิ่งที่เก็บไว้"],
   ["/history", "ประวัติ"],
 ];
 

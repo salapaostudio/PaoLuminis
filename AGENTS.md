@@ -28,6 +28,8 @@ Prefer Thai copy with phrases like:
 - Keep admin features server-side and gated by `ADMIN_EMAILS`.
 - Add migrations for database changes.
 - Run `pnpm lint` and `pnpm typecheck` before shipping.
+- Keep reading modes centralized in `lib/ai/reading-*.ts` and route generation through server-side handlers only.
+- Keep responses structured, Thai-first, and explicitly non-deterministic.
 
 ## UI direction
 

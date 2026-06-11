@@ -1,16 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { ReflectionView } from "@/components/ui";
-
-const categoryLabels = [
-  ["love", "ความรัก"],
-  ["career", "งาน"],
-  ["money", "เงิน"],
-  ["self", "ตัวเอง"],
-  ["decision", "การตัดสินใจ"],
-  ["timing", "จังหวะเวลา"],
-] as const;
+import { readingCategoryIds, readingModeMap, readingModes, type ReadingCategory, type ReadingModeId } from "@/lib/ai/reading-modes";
+import { readingCategoryLabel } from "@/lib/ai/reading-schema";
+import { toneProfiles } from "@/lib/ai/reading-style";
+import { Field, inputClass } from "@/components/ui";
 
 type ApiState = {
   reading?: { id: string; content: Record<string, unknown>; title?: string };
@@ -53,49 +48,154 @@ export function DailyLightPanel() {
       </button>
       {state.error ? <p className="rounded-[8px] bg-white/70 p-3 text-sm text-red-700">{state.error}</p> : null}
       {state.reading ? <ReflectionView content={state.reading.content} /> : null}
-      {state.reading ? <SaveReadingForm readingId={state.reading.id} /> : null}
+      {state.reading ? <SaveReadingButton readingId={state.reading.id} /> : null}
     </div>
   );
 }
 
 export function AskPanel() {
+  const [mode, setMode] = useState<ReadingModeId>("tarot");
+  const modeConfig = readingModeMap[mode];
+  const [category, setCategory] = useState<ReadingCategory>("self");
+  const [values, setValues] = useState<Record<string, string>>({});
   const [state, setState] = useState<ApiState>({});
   const [pending, startTransition] = useTransition();
 
+  useEffect(() => {
+    setValues((current) => {
+      const next: Record<string, string> = {};
+      modeConfig.inputFields.forEach((field) => {
+        next[field.name] = current[field.name] ?? "";
+      });
+      return next;
+    });
+  }, [mode, modeConfig]);
+
+  const modeTone = toneProfiles[modeConfig.toneProfile];
+  const selectedFields = modeConfig.inputFields;
+
+  function updateField(name: string, value: string) {
+    setValues((current) => ({ ...current, [name]: value }));
+  }
+
   return (
     <form
-      className="grid gap-4"
+      className="grid gap-5"
       onSubmit={(event) => {
         event.preventDefault();
-        const formData = new FormData(event.currentTarget);
         startTransition(async () => {
           try {
-            setState(
-              await postJson("/api/ai/ask", {
-                category: formData.get("category"),
-                question: formData.get("question"),
-              })
-            );
+            const input = Object.fromEntries(Object.entries(values).filter(([, value]) => value.trim().length > 0));
+            setState(await postJson("/api/readings/generate", { mode, category, input }));
           } catch (error) {
             setState({ error: error instanceof Error ? error.message : "เกิดข้อผิดพลาด" });
           }
         });
       }}
     >
-      <select name="category" className="rounded-[8px] border border-midnight/10 bg-white/80 px-4 py-3">
-        {categoryLabels.map(([value, label]) => (
-          <option key={value} value={value}>
-            {label}
-          </option>
+      <div className="grid gap-3">
+        <div>
+          <p className="text-sm font-semibold text-gold">เลือกโหมดคำอ่าน</p>
+          <p className="mt-1 text-sm leading-6 text-midnight/65">คำอ่านนี้เป็นแนวสะท้อนใจ ไม่ใช่คำตัดสินอนาคตแบบตายตัว</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {readingModes.map((item) => {
+            const selected = item.id === mode;
+            const tone = toneProfiles[item.toneProfile];
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setMode(item.id)}
+                className={`rounded-[8px] border p-4 text-left transition ${
+                  selected ? "border-midnight bg-midnight text-cream shadow-glow" : "border-midnight/10 bg-white/70 text-midnight hover:bg-white"
+                }`}
+              >
+                <p className="text-sm font-semibold">{item.labelTh}</p>
+                <p className={`mt-1 text-xs leading-5 ${selected ? "text-cream/80" : "text-midnight/60"}`}>{item.descriptionTh}</p>
+                <p className={`mt-2 text-xs ${selected ? "text-cream/70" : "text-gold"}`}>{tone.labelTh}</p>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <Field label="เลือกหัวข้อ">
+        <select
+          name="category"
+          value={category}
+          onChange={(event) => setCategory(event.target.value as ReadingCategory)}
+          className={inputClass}
+        >
+          {readingCategoryIds.map((value) => (
+            <option key={value} value={value}>
+              {readingCategoryLabel(value)}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      <div className="rounded-[8px] border border-gold/20 bg-gold/10 p-4 text-sm leading-6 text-midnight/75">
+        <p className="font-semibold text-midnight">{modeConfig.labelTh}</p>
+        <p className="mt-1">โทนหลัก: {modeTone.labelTh}</p>
+        <p className="mt-1">คำแนะนำ: {modeTone.exampleStyleGuidance.join(" · ")}</p>
+      </div>
+
+      <div className="grid gap-4">
+        {selectedFields.map((field) => (
+          <Field key={field.name} label={field.labelTh}>
+            {field.type === "textarea" ? (
+              <textarea
+                className={inputClass}
+                rows={field.name === "question" ? 5 : 3}
+                required={field.required}
+                placeholder={field.placeholder}
+                value={values[field.name] ?? ""}
+                onChange={(event) => updateField(field.name, event.target.value)}
+              />
+            ) : field.type === "select" ? (
+              <select
+                className={inputClass}
+                required={field.required}
+                value={values[field.name] ?? ""}
+                onChange={(event) => updateField(field.name, event.target.value)}
+              >
+                <option value="">เลือก...</option>
+                {field.options?.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.labelTh}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                className={inputClass}
+                type={field.type === "number" ? "number" : field.type === "tel" ? "tel" : field.type === "date" ? "date" : "text"}
+                required={field.required}
+                placeholder={field.placeholder}
+                value={values[field.name] ?? ""}
+                onChange={(event) => updateField(field.name, event.target.value)}
+              />
+            )}
+          </Field>
         ))}
-      </select>
-      <textarea name="question" required rows={5} className="rounded-[8px] border border-midnight/10 bg-white/80 px-4 py-3" placeholder="ถามสิ่งที่อยากสะท้อนใจ..." />
+      </div>
+
       <button className="rounded-full bg-midnight px-5 py-3 text-sm font-semibold text-cream shadow-glow disabled:opacity-60" disabled={pending}>
-        {pending ? "กำลังสะท้อน..." : "ถาม AI"}
+        {pending ? "กำลังฟังคำถามของคุณ..." : "เปิดคำอ่าน"}
       </button>
+
+      <p className="text-xs leading-5 text-midnight/55">
+        {modeConfig.safetyNotes[0] ?? "คำอ่านนี้ใช้เพื่อการสะท้อนตัวเอง ไม่ใช่คำแนะนำทางการแพทย์ กฎหมาย การเงิน หรือการตัดสินใจแทนคุณ"}
+      </p>
+
       {state.error ? <p className="rounded-[8px] bg-white/70 p-3 text-sm text-red-700">{state.error}</p> : null}
-      {state.reading ? <ReflectionView content={state.reading.content} /> : null}
-      {state.reading ? <SaveReadingForm readingId={state.reading.id} /> : null}
+      {state.reading ? (
+        <div className="grid gap-4">
+          <ReflectionView content={state.reading.content} />
+          <SaveReadingButton readingId={state.reading.id} />
+        </div>
+      ) : null}
     </form>
   );
 }
@@ -107,7 +207,7 @@ export function TarotPanel() {
 
   return (
     <div className="grid gap-4">
-      <input value={intention} onChange={(event) => setIntention(event.target.value)} className="rounded-[8px] border border-midnight/10 bg-white/80 px-4 py-3" placeholder="ความตั้งใจในการจั่วใบนี้..." />
+      <input value={intention} onChange={(event) => setIntention(event.target.value)} className={inputClass} placeholder="ความตั้งใจในการจั่วใบนี้..." />
       <button
         className="rounded-full bg-midnight px-5 py-3 text-sm font-semibold text-cream shadow-glow disabled:opacity-60"
         disabled={pending}
@@ -126,7 +226,7 @@ export function TarotPanel() {
       {state.card ? <p className="rounded-[8px] bg-mist p-4 font-semibold text-midnight">{state.card.name} · {state.card.archetype}</p> : null}
       {state.error ? <p className="rounded-[8px] bg-white/70 p-3 text-sm text-red-700">{state.error}</p> : null}
       {state.reading ? <ReflectionView content={state.reading.content} /> : null}
-      {state.reading ? <SaveReadingForm readingId={state.reading.id} /> : null}
+      {state.reading ? <SaveReadingButton readingId={state.reading.id} /> : null}
     </div>
   );
 }
@@ -154,18 +254,18 @@ export function JournalReflectButton({ journalId }: { journalId: string }) {
       </button>
       {state.error ? <p className="rounded-[8px] bg-white/70 p-3 text-sm text-red-700">{state.error}</p> : null}
       {state.reflection ? <ReflectionView content={state.reflection.content} /> : null}
-      {state.reading ? <SaveReadingForm readingId={state.reading.id} /> : null}
+      {state.reading ? <SaveReadingButton readingId={state.reading.id} /> : null}
     </div>
   );
 }
 
-function SaveReadingForm({ readingId }: { readingId: string }) {
+function SaveReadingButton({ readingId }: { readingId: string }) {
   return (
-    <form action="/saved" method="get">
-      <input type="hidden" name="reading_id" value={readingId} />
-      <a className="inline-flex rounded-full border border-midnight/15 bg-white/70 px-4 py-2 text-sm font-semibold text-midnight" href={`/saved?reading_id=${readingId}`}>
-        ไปบันทึกคำสะท้อนนี้
-      </a>
-    </form>
+    <a
+      className="inline-flex w-fit rounded-full border border-midnight/15 bg-white/70 px-4 py-2 text-sm font-semibold text-midnight"
+      href={`/saved?reading_id=${readingId}`}
+    >
+      เก็บคำอ่านนี้
+    </a>
   );
 }

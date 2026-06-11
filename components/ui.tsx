@@ -66,9 +66,19 @@ export function SubmitButton({ children }: { children: React.ReactNode }) {
 }
 
 export const reflectionLabels: Record<string, string> = {
+  title: "ชื่อคำอ่าน",
+  opening: "คำเปิดอย่างอ่อนโยน",
   gentle_opening: "คำเปิดอย่างอ่อนโยน",
+  symbolicMessage: "ข้อความจากสัญลักษณ์",
   symbolic_insight: "สัญลักษณ์ที่สะท้อนใจ",
+  emotionalReflection: "สิ่งที่ใจอาจกำลังรู้สึก",
   emotional_reflection: "ภาพสะท้อนอารมณ์",
+  psychologicalLens: "มุมมองทางใจ",
+  gentleAdvice: "คำแนะนำอย่างอ่อนโยน",
+  reflectionQuestions: "คำถามสะท้อนใจ",
+  microAction: "ก้าวเล็ก ๆ วันนี้",
+  closing: "การย้ำเตือนท้ายคำอ่าน",
+  safetyNote: "หมายเหตุด้านความปลอดภัย",
   journal_prompt: "คำถามบันทึกใจ",
   micro_action: "ก้าวเล็ก ๆ วันนี้",
   psychological_lens: "มุมมองทางใจ",
@@ -80,15 +90,59 @@ export const reflectionLabels: Record<string, string> = {
   gentle_reframe: "การมองใหม่อย่างอ่อนโยน",
   one_question: "หนึ่งคำถามกับตัวเอง",
   one_micro_action: "หนึ่งก้าวเล็ก ๆ",
+  modeDetails: "รายละเอียดเชิงโหมด",
+  mainSymbol: "สัญลักษณ์หลัก",
+  numberPattern: "รูปแบบตัวเลข",
+  spaceObservation: "ข้อสังเกตพื้นที่",
+  decisionFrame: "กรอบการตัดสินใจ",
+  theme: "ธีม",
+  caution: "ข้อควรระวัง",
+  practicalNote: "บันทึกเชิงปฏิบัติ",
 };
 
 export function ReflectionView({ content }: { content: Record<string, unknown> }) {
+  const renderValue = (value: unknown) => {
+    if (Array.isArray(value)) {
+      return (
+        <ul className="mt-2 grid gap-2">
+          {value.map((item, index) => (
+            <li key={index} className="rounded-[8px] bg-white/60 px-3 py-2 text-sm leading-6 text-midnight/75">
+              {String(item)}
+            </li>
+          ))}
+        </ul>
+      );
+    }
+
+    if (value && typeof value === "object") {
+      const entries = Object.entries(value as Record<string, unknown>);
+      if (entries.length === 0) {
+        return <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-midnight/55">ไม่มีรายละเอียดเพิ่มเติม</p>;
+      }
+
+      return (
+        <div className="mt-2 grid gap-2">
+          {entries.map(([nestedKey, nestedValue]) => (
+            <div key={nestedKey} className="rounded-[8px] bg-white/60 px-3 py-2">
+              <p className="text-xs font-semibold text-midnight/55">{reflectionLabels[nestedKey] ?? nestedKey}</p>
+              <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-midnight/75">{String(nestedValue)}</p>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    return <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-midnight/75">{String(value)}</p>;
+  };
+
   return (
     <div className="grid gap-3">
-      {Object.entries(content).map(([key, value]) => (
+      {Object.entries(content)
+        .filter(([key]) => key !== "title")
+        .map(([key, value]) => (
         <div key={key} className="rounded-[8px] bg-cream/70 p-4">
           <h3 className="text-sm font-semibold text-midnight">{reflectionLabels[key] ?? key}</h3>
-          <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-midnight/75">{String(value)}</p>
+          {renderValue(value)}
         </div>
       ))}
     </div>

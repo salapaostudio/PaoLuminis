@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Card } from "@/components/ui";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { readingTypeLabels } from "@/lib/labels";
 import { formatThaiDate } from "@/lib/utils";
 
 export default async function AdminPage() {
@@ -76,7 +77,7 @@ export default async function AdminPage() {
         <div className="mt-4 grid gap-3">
           {recent.data?.map((item) => (
             <div key={item.id} className="rounded-[8px] bg-cream/70 p-3 text-sm text-midnight/75">
-              {item.type} · {item.title ?? "ไม่มีชื่อ"} · {item.safety_status} · {formatThaiDate(item.created_at)}
+              {readingTypeLabels[item.type] ?? item.type} · {item.title ?? "ไม่มีชื่อ"} · {item.safety_status} · {formatThaiDate(item.created_at)}
             </div>
           ))}
         </div>

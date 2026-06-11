@@ -1,7 +1,20 @@
 export const readingTypeLabels: Record<string, string> = {
-  daily_light: "แสงประจำวัน",
-  ask_ai: "ถาม Luminis",
-  tarot: "การ์ดสัญลักษณ์",
+  daily_light: "แสงนำทางวันนี้",
+  ask_ai: "ถามแสงนำทาง",
+  tarot: "ไพ่สะท้อนใจ",
+  oracle: "Oracle Message",
+  astrology: "โหราศาสตร์สะท้อนตัวตน",
+  numerology: "เลขศาสตร์ชีวิต",
+  name_analysis: "วิเคราะห์ชื่อเชิงความหมาย",
+  thai_taksa: "ทักษาปกรณ์",
+  lucky_phone: "วิเคราะห์เบอร์เชิงพลังงาน",
+  feng_shui: "ฮวงจุ้ยเชิงบรรยากาศ",
+  i_ching: "I Ching Reflection",
+  human_design: "Human Design Reflection",
+  decision_companion: "เพื่อนช่วยตัดสินใจ",
+  relationship_mirror: "กระจกความสัมพันธ์",
+  career_reflection: "เข็มทิศเรื่องงาน",
+  money_reflection: "ความสัมพันธ์กับเงิน",
   journal_reflection: "สะท้อนบันทึกใจ",
 };
 
@@ -9,8 +22,11 @@ export const askCategoryLabels: Record<string, string> = {
   love: "ความรัก",
   career: "งาน",
   money: "เงิน",
+  family: "ครอบครัว",
   self: "ตัวเอง",
   decision: "การตัดสินใจ",
+  future: "อนาคตใกล้ ๆ",
+  space: "พื้นที่",
   timing: "จังหวะเวลา",
 };
 
