@@ -5,7 +5,7 @@ create table if not exists public.profiles (
   email text,
   nickname text,
   birth_date date,
-  birth_time time nullable,
+  birth_time time,
   main_intention text,
   current_life_question text,
   onboarding_completed boolean default false,
@@ -17,8 +17,8 @@ create table if not exists public.mood_checkins (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade,
   mood text not null,
-  energy_level int nullable,
-  note text nullable,
+  energy_level int,
+  note text,
   created_at timestamptz default now()
 );
 
@@ -33,11 +33,11 @@ create table if not exists public.questions (
 create table if not exists public.readings (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade,
-  question_id uuid references public.questions(id) nullable,
+  question_id uuid references public.questions(id),
   type text not null,
-  title text nullable,
+  title text,
   content jsonb not null,
-  model_used text nullable,
+  model_used text,
   safety_status text default 'ok',
   created_at timestamptz default now()
 );
@@ -45,9 +45,9 @@ create table if not exists public.readings (
 create table if not exists public.journals (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade,
-  prompt text nullable,
+  prompt text,
   body text not null,
-  mood text nullable,
+  mood text,
   created_at timestamptz default now()
 );
 
@@ -56,7 +56,7 @@ create table if not exists public.journal_reflections (
   user_id uuid references auth.users(id) on delete cascade,
   journal_id uuid references public.journals(id) on delete cascade,
   content jsonb not null,
-  model_used text nullable,
+  model_used text,
   created_at timestamptz default now()
 );
 
@@ -64,8 +64,8 @@ create table if not exists public.saved_insights (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade,
   reading_id uuid references public.readings(id) on delete cascade,
-  label text nullable,
-  note text nullable,
+  label text,
+  note text,
   created_at timestamptz default now()
 );
 
@@ -84,8 +84,8 @@ create table if not exists public.tarot_draws (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade,
   card_id uuid references public.tarot_cards(id),
-  intention text nullable,
-  reading_id uuid references public.readings(id) nullable,
+  intention text,
+  reading_id uuid references public.readings(id),
   created_at timestamptz default now()
 );
 
@@ -99,11 +99,11 @@ create table if not exists public.usage_events (
 
 create table if not exists public.safety_logs (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) nullable,
-  input_text text nullable,
-  risk_type text nullable,
-  severity text nullable,
-  action_taken text nullable,
+  user_id uuid references auth.users(id),
+  input_text text,
+  risk_type text,
+  severity text,
+  action_taken text,
   created_at timestamptz default now()
 );
 
@@ -112,8 +112,8 @@ create table if not exists public.reports (
   user_id uuid references auth.users(id) on delete cascade,
   report_type text not null,
   status text default 'draft',
-  content jsonb nullable,
-  price_amount int nullable,
+  content jsonb,
+  price_amount int,
   currency text default 'THB',
   created_at timestamptz default now()
 );
