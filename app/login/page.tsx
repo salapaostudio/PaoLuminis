@@ -1,5 +1,5 @@
 import { Card, Field, inputClass, SubmitButton } from "@/components/ui";
-import { signInWithMagicLink } from "./actions";
+import { signInWithGoogle, signInWithMagicLink } from "./actions";
 
 export default async function LoginPage({
   searchParams,
@@ -14,9 +14,19 @@ export default async function LoginPage({
         <p className="text-sm font-semibold text-gold">PaoLuminis</p>
         <h1 className="mt-2 text-3xl font-semibold text-midnight">เข้าสู่พื้นที่สะท้อนใจ</h1>
         <p className="mt-3 text-sm leading-6 text-midnight/70">
-          ใช้อีเมลเพื่อรับ magic link สำหรับเข้าสู่ระบบอย่างเรียบง่ายและปลอดภัย
+          เข้าสู่ระบบด้วย Google หรือใช้อีเมลเพื่อรับ magic link แบบเรียบง่ายและปลอดภัย
         </p>
-        <form action={signInWithMagicLink} className="mt-6 grid gap-4">
+        <form action={signInWithGoogle} className="mt-6">
+          <button className="inline-flex w-full items-center justify-center rounded-full border border-midnight/10 bg-white px-5 py-3 text-sm font-semibold text-midnight shadow-glow transition hover:-translate-y-0.5">
+            เข้าสู่ระบบด้วย Google
+          </button>
+        </form>
+        <div className="my-5 flex items-center gap-3 text-xs text-midnight/45">
+          <span className="h-px flex-1 bg-midnight/10" />
+          หรือรับลิงก์ทางอีเมล
+          <span className="h-px flex-1 bg-midnight/10" />
+        </div>
+        <form action={signInWithMagicLink} className="grid gap-4">
           <Field label="อีเมล">
             <input className={inputClass} name="email" type="email" placeholder="you@example.com" required />
           </Field>

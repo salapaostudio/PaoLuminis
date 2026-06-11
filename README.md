@@ -26,7 +26,7 @@ The app is designed for deployment on Vercel with Supabase for authentication an
 - **Framework:** Next.js App Router
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS
-- **Auth:** Supabase Auth with email magic links
+- **Auth:** Supabase Auth with Google OAuth and email magic links
 - **Database:** Supabase PostgreSQL
 - **Security:** Supabase Row Level Security
 - **AI:** Google Gemini API through server-side route handlers only
@@ -49,7 +49,8 @@ Route: `/`
 
 Route: `/login`
 
-- Supabase email magic link login.
+- Supabase Google OAuth login.
+- Supabase email magic link login as fallback.
 - Auth callback at `/auth/callback`.
 
 ### Onboarding
@@ -291,6 +292,47 @@ https://your-vercel-domain.vercel.app/auth/callback
 
 4. If you use a custom domain, add that callback URL too.
 
+### Google OAuth Setup
+
+PaoLuminis uses Supabase Auth as the OAuth broker. The app calls Supabase with:
+
+```text
+provider = google
+redirectTo = ${NEXT_PUBLIC_SITE_URL}/auth/callback
+```
+
+In Google Cloud Console:
+
+1. Create or open a Google Cloud project.
+2. Go to APIs & Services.
+3. Configure OAuth consent screen.
+4. Create OAuth Client ID for a Web application.
+5. Add this Authorized redirect URI:
+
+```text
+https://<your-supabase-project-ref>.supabase.co/auth/v1/callback
+```
+
+Replace `<your-supabase-project-ref>` with the ref from your Supabase project URL.
+
+In Supabase:
+
+1. Go to Authentication → Providers → Google.
+2. Enable Google.
+3. Paste the Google Client ID and Client Secret from Google Cloud.
+4. Go to Authentication → URL Configuration.
+5. Add your app callback URL to Redirect URLs:
+
+```text
+${NEXT_PUBLIC_SITE_URL}/auth/callback
+```
+
+For local development, if `NEXT_PUBLIC_SITE_URL=http://localhost:3000`, add:
+
+```text
+http://localhost:3000/auth/callback
+```
+
 ## 8. Running Migrations
 
 The database schema is in:
@@ -382,6 +424,7 @@ https://your-vercel-domain.vercel.app/auth/callback
 
 After deploy:
 
+- Test Google login.
 - Test magic-link login.
 - Complete onboarding.
 - Generate Daily Light.
