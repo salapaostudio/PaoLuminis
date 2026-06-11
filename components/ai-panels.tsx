@@ -164,7 +164,7 @@ function SaveReadingForm({ readingId }: { readingId: string }) {
     <form action="/saved" method="get">
       <input type="hidden" name="reading_id" value={readingId} />
       <a className="inline-flex rounded-full border border-midnight/15 bg-white/70 px-4 py-2 text-sm font-semibold text-midnight" href={`/saved?reading_id=${readingId}`}>
-        ไปบันทึก insight นี้
+        ไปบันทึกคำสะท้อนนี้
       </a>
     </form>
   );

@@ -1,13 +1,7 @@
 import { Card, ReflectionView } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
 import { formatThaiDate } from "@/lib/utils";
-
-const readingTypeLabels: Record<string, string> = {
-  daily_light: "แสงประจำวัน",
-  ask_ai: "ถาม Luminis",
-  tarot: "การ์ดสัญลักษณ์",
-  journal_reflection: "สะท้อนบันทึกใจ",
-};
+import { formatReadingTitle, readingTypeLabels } from "@/lib/labels";
 
 export default async function HistoryPage() {
   const supabase = await createClient();
@@ -41,7 +35,7 @@ export default async function HistoryPage() {
               {dateReadings?.map((reading) => (
                 <Card key={reading.id}>
                   <p className="text-sm font-semibold text-gold">{readingTypeLabels[reading.type] ?? reading.type}</p>
-                  <h3 className="mt-1 text-xl font-semibold text-midnight">{reading.title ?? "คำสะท้อน"}</h3>
+                  <h3 className="mt-1 text-xl font-semibold text-midnight">{formatReadingTitle(reading.type, reading.title)}</h3>
                   <div className="mt-4">
                     <ReflectionView content={reading.content as Record<string, unknown>} />
                   </div>

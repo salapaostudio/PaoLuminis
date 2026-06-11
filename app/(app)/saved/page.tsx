@@ -31,13 +31,13 @@ export default async function SavedPage({
         <Card>
           <form action={saveInsight} className="grid gap-4">
             <input type="hidden" name="reading_id" value={params.reading_id} />
-            <Field label="ชื่อ insight">
+            <Field label="ชื่อคำสะท้อน">
               <input className={inputClass} name="label" defaultValue="แสงที่อยากเก็บไว้" />
             </Field>
             <Field label="โน้ตส่วนตัว">
               <textarea className={inputClass} name="note" rows={3} />
             </Field>
-            <SubmitButton>บันทึก insight</SubmitButton>
+            <SubmitButton>บันทึกคำสะท้อน</SubmitButton>
           </form>
         </Card>
       ) : null}
@@ -50,7 +50,7 @@ export default async function SavedPage({
           </Card>
         )) : (
           <Card>
-            <p className="text-sm leading-6 text-midnight/70">ยังไม่มี insight ที่บันทึกไว้ เมื่อเจอคำสะท้อนที่อยากกลับมาอ่าน ให้กดบันทึกจากแสงวันนี้ ถาม Luminis หรือการ์ดสัญลักษณ์ได้เลย</p>
+            <p className="text-sm leading-6 text-midnight/70">ยังไม่มีคำสะท้อนที่บันทึกไว้ เมื่อเจอข้อความที่อยากกลับมาอ่าน ให้กดบันทึกจากแสงวันนี้ ถาม Luminis หรือการ์ดสัญลักษณ์ได้เลย</p>
           </Card>
         )}
       </div>

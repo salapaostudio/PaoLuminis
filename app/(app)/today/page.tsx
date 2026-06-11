@@ -3,6 +3,8 @@ import Link from "next/link";
 import { DailyLightPanel } from "@/components/ai-panels";
 import { Card, ReflectionView } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
+import { appTimeZone } from "@/lib/usage";
+import { getTimeZoneDayRange } from "@/lib/timezone";
 import { formatThaiDate } from "@/lib/utils";
 
 export default async function TodayPage() {
@@ -15,14 +17,14 @@ export default async function TodayPage() {
   const { data: profile } = await supabase.from("profiles").select("onboarding_completed,nickname").eq("id", user.id).maybeSingle();
   if (!profile?.onboarding_completed) redirect("/onboarding");
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const { start, end } = getTimeZoneDayRange(new Date(), appTimeZone);
   const { data: daily } = await supabase
     .from("readings")
     .select("*")
     .eq("user_id", user.id)
     .eq("type", "daily_light")
-    .gte("created_at", today.toISOString())
+    .gte("created_at", start.toISOString())
+    .lt("created_at", end.toISOString())
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -38,7 +40,7 @@ export default async function TodayPage() {
           <div className="grid gap-4">
             <ReflectionView content={daily.content as Record<string, unknown>} />
             <Link className="w-fit rounded-full border border-midnight/15 bg-white/70 px-4 py-2 text-sm font-semibold text-midnight" href={`/saved?reading_id=${daily.id}`}>
-              บันทึก insight นี้
+              บันทึกคำสะท้อนนี้
             </Link>
           </div>
         ) : (
