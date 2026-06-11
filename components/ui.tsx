@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getRenderableReadingSections } from "@/lib/ai/reading-ui";
 import { cn } from "@/lib/utils";
 
 export function ButtonLink({
@@ -137,9 +138,7 @@ export function ReflectionView({ content }: { content: Record<string, unknown> }
 
   return (
     <div className="grid gap-3">
-      {Object.entries(content)
-        .filter(([key]) => key !== "title")
-        .map(([key, value]) => (
+      {getRenderableReadingSections(content).map(([key, value]) => (
         <div key={key} className="rounded-[8px] bg-cream/70 p-4">
           <h3 className="text-sm font-semibold text-midnight">{reflectionLabels[key] ?? key}</h3>
           {renderValue(value)}

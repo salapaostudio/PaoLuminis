@@ -6,6 +6,7 @@ import { ReflectionView } from "@/components/ui";
 import { readingModeMap, readingModes, type ReadingCategory, type ReadingModeId } from "@/lib/ai/reading-modes";
 import { readingCategoryLabel } from "@/lib/ai/reading-schema";
 import { toneProfiles } from "@/lib/ai/reading-style";
+import { normalizeReadingInput, validateReadingForm } from "@/lib/ai/reading-ui";
 import { Field, inputClass } from "@/components/ui";
 
 type ApiState = {
@@ -76,6 +77,7 @@ export function AskPanel() {
   const modeTone = toneProfiles[modeConfig.toneProfile];
   const selectedFields = modeConfig.inputFields;
   const selectedCategories = modeConfig.allowedCategories;
+  const modeTips = Object.values(modeConfig.examplePlaceholders);
 
   function updateField(name: string, value: string) {
     setValues((current) => ({ ...current, [name]: value }));
@@ -86,9 +88,15 @@ export function AskPanel() {
       className="grid gap-5"
       onSubmit={(event) => {
         event.preventDefault();
+        const validation = validateReadingForm(mode, values);
+        if (!validation.valid) {
+          setState({ error: validation.errors[0] ?? "กรุณากรอกข้อมูลให้ครบก่อนเปิดคำอ่าน" });
+          return;
+        }
+
         startTransition(async () => {
           try {
-            const input = Object.fromEntries(Object.entries(values).filter(([, value]) => value.trim().length > 0));
+            const input = normalizeReadingInput(values);
             setState(await postJson("/api/readings/generate", { mode, category, input }));
           } catch (error) {
             setState({ error: error instanceof Error ? error.message : "เกิดข้อผิดพลาด" });
@@ -109,6 +117,7 @@ export function AskPanel() {
               <button
                 key={item.id}
                 type="button"
+                aria-pressed={selected}
                 onClick={() => setMode(item.id)}
                 className={`rounded-[8px] border p-4 text-left transition ${
                   selected ? "border-midnight bg-midnight text-cream shadow-glow" : "border-midnight/10 bg-white/70 text-midnight hover:bg-white"
@@ -142,6 +151,7 @@ export function AskPanel() {
         <p className="font-semibold text-midnight">{modeConfig.labelTh}</p>
         <p className="mt-1">โทนหลัก: {modeTone.labelTh}</p>
         <p className="mt-1">คำแนะนำ: {modeTone.exampleStyleGuidance.join(" · ")}</p>
+        {modeTips.length ? <p className="mt-1">ชวนลอง: {modeTips.join(" · ")}</p> : null}
       </div>
 
       <div className="grid gap-4">

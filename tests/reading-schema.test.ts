@@ -27,6 +27,28 @@ describe("readingGenerateSchema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("accepts name and number modes without optional questions", () => {
+    const numerology = readingGenerateSchema.safeParse({
+      mode: "numerology",
+      category: "self",
+      input: { birth_date: "1992-04-18" },
+    });
+    const nameAnalysis = readingGenerateSchema.safeParse({
+      mode: "name_analysis",
+      category: "self",
+      input: { name: "ศาลาเปา ลูมินิส" },
+    });
+    const thaiTaksa = readingGenerateSchema.safeParse({
+      mode: "thai_taksa",
+      category: "self",
+      input: { name: "ปาวลูมินิส" },
+    });
+
+    expect(numerology.success).toBe(true);
+    expect(nameAnalysis.success).toBe(true);
+    expect(thaiTaksa.success).toBe(true);
+  });
+
   it("accepts a mock structured AI reading output", () => {
     const result = readingResponseSchema.safeParse({
       title: "ไพ่สะท้อนใจ",
