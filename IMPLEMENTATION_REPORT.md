@@ -2,429 +2,321 @@
 
 ## 1. Executive Summary
 
-The latest PaoLuminis update added a centralized Reading Mode system and connected it to a new server-side AI generation flow. The app now supports multiple reflective reading styles, richer Thai-first response structures, mode-specific input fields, tone profiles, stronger safety language, and improved UI labels.
+This update completed the interactive Reading Page / Ask Page experience for PaoLuminis. Users can now select a reading mode, enter mode-specific inputs, submit a structured reading request, view Thai-first AI responses in separate cards, and save insights through the existing Supabase-backed flow.
 
-Current project status: the codebase is clean, the latest implementation is committed as `bd98360 Add reflective reading mode system`, and `pnpm lint`, `pnpm typecheck`, and `pnpm build` all pass.
+The app remains mobile-first, server-side for Gemini calls, and aligned with the "AI Spiritual Reflection Companion" brand. Core checks are green: `pnpm lint`, `pnpm typecheck`, and `pnpm build` all pass.
 
 ## 2. Main Goal of This Update
 
-The purpose of this update was to make PaoLuminis feel more like a warm AI Spiritual Reflection Companion and less like a generic chatbot or deterministic fortune-telling site.
+The purpose of this update was to make the reading experience feel more like a reflective spiritual companion and less like a generic chatbot.
 
-Main goals:
+Goals covered:
 
-- Improve reading modes so users can choose a reading style that matches their current question.
-- Improve Thai AI response language so answers feel warm, reflective, and brand-aligned.
-- Make readings more empowering, non-fear-based, and non-deterministic.
-- Align the product with the core direction: "ให้ดวงเป็นกระจก ไม่ใช่กรงขัง".
-- Keep Gemini API calls server-side only.
-- Keep generated readings saved through the existing Supabase-backed reading system.
+- Improve reading modes
+- Improve Thai AI response language
+- Make readings more reflective and less fear-based
+- Align the UI and prompt system with the PaoLuminis brand direction
 
 ## 3. Files Changed
 
 | File | Type of Change | Summary |
 | ---- | -------------- | ------- |
-| `app/api/readings/generate/route.ts` | New file | Adds server-side reading generation route for mode-based AI readings. |
-| `lib/ai/reading-modes.ts` | New file | Central static configuration for reading modes, categories, input fields, labels, tone profile mapping, and safety notes. |
-| `lib/ai/reading-prompts.ts` | New file | Adds centralized prompt builder for mode-aware Thai reflective readings. |
-| `lib/ai/reading-schema.ts` | New file | Adds zod validation for reading generation input and structured AI response output. |
-| `lib/ai/reading-style.ts` | New file | Defines tone profiles such as warm mystic, grounded reflective, poetic spiritual, direct but kind, and practical calm. |
-| `lib/ai/safety-rules.ts` | New file | Adds shared safety guidance, banned topic categories, and repeated-question guidance text. |
-| `tests/reading-schema.test.ts` | New file | Adds lightweight validation tests for the new reading schema. |
-| `components/ai-panels.tsx` | Modified | Rebuilds the Ask panel with reading mode selector, category selector, dynamic fields, Thai loading copy, safety note, and new API call. |
-| `components/ui.tsx` | Modified | Improves `ReflectionView` to render new camelCase structured response fields, arrays, and nested objects. |
-| `components/nav.tsx` | Modified | Updates visible navigation labels to more Thai-first, brand-aligned copy. |
-| `app/(app)/ask/page.tsx` | Modified | Updates Ask page copy to introduce the reading mode experience. |
-| `app/(app)/history/page.tsx` | Modified | Adjusts empty state copy to match new "แสงนำทาง" wording. |
-| `app/admin/page.tsx` | Modified | Maps reading type labels to Thai in recent admin reading metadata. |
-| `lib/ai/gemini.ts` | Modified | Adds `generateReadingResponse`, mode-based model selection, structured JSON parsing, and mode-specific fallback responses. |
-| `lib/context.ts` | Modified | Adds recent questions to AI context for repeated-question handling. |
-| `lib/labels.ts` | Modified | Adds Thai display labels for new reading modes and expanded categories. |
-| `lib/safety/check.ts` | Modified | Expands keyword-based safety detection for self-harm, violence, medical/legal/financial, manipulation, curses, death, accident, and guaranteed-outcome prompts. |
-| `tests/safety.test.ts` | Modified | Adds coverage for accident/fatalistic safety caution. |
-| `README.md` | Modified | Documents the new reading mode system and new server route. |
-| `AGENTS.md` | Modified | Adds contributor guidance for keeping reading modes centralized and Thai-first. |
+| `components/ai-panels.tsx` | Modified | Builds the interactive Ask page UI with mode selector, dynamic inputs, loading state, safety note, empty state, response rendering, and save flow. |
+| `components/nav.tsx` | Existing Thai labels | Keeps Thai-first navigation labels such as แสงนำทาง, สิ่งที่เก็บไว้, and บันทึกใจ. |
+| `components/ui.tsx` | Existing shared UI | Renders structured reading responses in separate cards and supports nested objects and arrays. |
+| `app/(app)/ask/page.tsx` | Existing route page | Wraps the Ask UI in the page shell and sets the brand headline. |
+| `app/api/readings/generate/route.ts` | Existing API route | Receives mode-based requests, validates them, checks safety, calls Gemini server-side, and stores readings. |
+| `lib/ai/reading-modes.ts` | Existing config | Central reading-mode registry with labels, purposes, categories, fields, and safety notes. |
+| `lib/ai/reading-prompts.ts` | Existing prompt builder | Builds mode-aware prompts from user input, profile context, tone profile, and reading mode metadata. |
+| `lib/ai/reading-schema.ts` | Existing schema | Validates dynamic request payloads and the structured AI response shape. |
+| `lib/ai/reading-style.ts` | Existing tone config | Defines warm mystic, grounded reflective, poetic spiritual, direct but kind, and practical calm tone profiles. |
+| `lib/ai/safety-rules.ts` | Existing safety layer | Adds reading-specific safety blocking and repeated-question guidance. |
+| `lib/ai/gemini.ts` | Existing Gemini wrapper | Handles structured generation and fallback parsing for readings. |
+| `lib/context.ts` | Existing context helper | Passes recent questions and user profile context into prompt building. |
+| `lib/labels.ts` | Existing label map | Maps reading types and categories to Thai labels for history/admin display. |
+| `lib/safety/check.ts` | Existing safety checker | Covers self-harm, violence, medical/legal/financial, fatalistic, and manipulation risks. |
+| `app/(app)/saved/page.tsx` | Existing saved page | Provides the existing save-confirmation destination and saved-insight list. |
+| `app/(app)/history/page.tsx` | Existing history page | Provides Thai-first empty state and grouped reading history. |
+| `tests/reading-schema.test.ts` | Existing test file | Validates mode input and structured response output. |
+| `tests/safety.test.ts` | Existing test file | Covers unsafe and reading-specific safety patterns. |
+| `README.md` | Existing docs | Documents the reading mode system and Ask flow. |
+| `AGENTS.md` | Existing docs | Reinforces reading-mode centralization and Thai-first behavior. |
 
 ## 4. New Features Added
 
-### Reading Mode Selector
+### Interactive Ask / Reading Page
 
-- Route/page/component involved: `/ask`, `components/ai-panels.tsx`.
-- What the user can do: choose a reading style such as ไพ่สะท้อนใจ, เลขศาสตร์ชีวิต, วิเคราะห์ชื่อ, วิเคราะห์เบอร์, ฮวงจุ้ยเชิงบรรยากาศ, or กระจกความสัมพันธ์.
-- Backend/API involved: `app/api/readings/generate/route.ts`.
-- Current completion status: implemented.
+- Route/page/component involved: `/ask`, `app/(app)/ask/page.tsx`, `components/ai-panels.tsx`
+- What the user can do: choose a reading mode, enter mode-specific inputs, submit a reading request, and view the response.
+- Backend/API involved: `POST /api/readings/generate`
+- Status: implemented
 
-### Dynamic Reading Inputs
+### Mode-Specific Dynamic Inputs
 
-- Route/page/component involved: `/ask`, `components/ai-panels.tsx`, `lib/ai/reading-modes.ts`.
-- What the user can do: see mode-specific fields, such as birth date for numerology, name for name analysis, phone number for lucky phone, space description for feng shui, and relationship status for relationship mirror.
-- Backend/API involved: `lib/ai/reading-schema.ts` validates required fields.
-- Current completion status: implemented.
+- Route/page/component involved: `components/ai-panels.tsx`, `lib/ai/reading-modes.ts`
+- What the user can do: see inputs that change based on the selected reading mode.
+- Backend/API involved: validation through `lib/ai/reading-schema.ts`
+- Status: implemented
 
-### Server-Side Reading Generation API
+### Structured AI Response Rendering
 
-- Route/page/component involved: `app/api/readings/generate/route.ts`.
-- What the user can do: submit a reading mode request and receive a structured AI-generated reflection.
-- Backend/API involved: Supabase auth, safety check, usage limit, Gemini generation, `questions` insert, `readings` insert, `usage_events` insert.
-- Current completion status: implemented.
+- Route/page/component involved: `components/ui.tsx`
+- What the user can do: read results in separated cards for opening, symbolic message, emotional reflection, psychological lens, gentle advice, reflection questions, micro action, closing, safety note, and mode details.
+- Backend/API involved: structured JSON parsing in `lib/ai/gemini.ts`
+- Status: implemented
 
-### Structured Reading Output
+### Save Insight Flow
 
-- Route/page/component involved: `lib/ai/reading-schema.ts`, `lib/ai/gemini.ts`, `components/ui.tsx`.
-- What the user can do: read responses separated into opening, symbolic message, emotional reflection, psychological lens, gentle advice, reflection questions, micro action, closing, safety note, and optional mode details.
-- Backend/API involved: Gemini output parsing and fallback response handling.
-- Current completion status: implemented.
+- Route/page/component involved: `components/ai-panels.tsx`, `app/(app)/actions.ts`, `app/(app)/saved/page.tsx`
+- What the user can do: save a reading as an insight using the existing Supabase-backed action.
+- Backend/API involved: server action `saveInsight`
+- Status: implemented
 
-### Tone Profiles
+### Thai-First Navigation and Empty States
 
-- Route/page/component involved: `lib/ai/reading-style.ts`, `lib/ai/reading-prompts.ts`.
-- What the user can do: indirectly receive different response styles depending on mode, such as warm mystical, practical calm, or direct but kind.
-- Backend/API involved: prompt builder uses mode tone profile.
-- Current completion status: implemented.
-
-### Repeated-Question Context
-
-- Route/page/component involved: `lib/context.ts`, `lib/ai/reading-prompts.ts`.
-- What the user can do: receive gentler redirection when similar emotional questions repeat.
-- Backend/API involved: recent questions are fetched from Supabase and passed into prompt context.
-- Current completion status: implemented at prompt level.
+- Route/page/component involved: `components/nav.tsx`, `app/(app)/history/page.tsx`, `app/(app)/saved/page.tsx`, `components/ai-panels.tsx`
+- What the user can do: see Thai-first labels and helpful empty states instead of blank screens.
+- Backend/API involved: none
+- Status: implemented
 
 ## 5. Reading Mode System
 
 | Mode ID | Thai Label | Purpose | Status |
 | ------- | ---------- | ------- | ------ |
-| `daily_light` | แสงนำทางวันนี้ | Daily reflection for mood, energy, and one small action. | implemented |
-| `tarot` | ไพ่สะท้อนใจ | Symbolic card-style reading for love, work, self, decisions, and timing. | implemented |
-| `oracle` | Oracle Message | Gentle spiritual message for inner guidance. | implemented |
-| `astrology` | โหราศาสตร์สะท้อนตัวตน | Symbolic reflection from birth data and life themes. No full chart engine yet. | config only / symbolic implementation |
-| `numerology` | เลขศาสตร์ชีวิต | Symbolic reflection from birth date and number patterns. No full numerology calculator yet. | implemented, symbolic |
-| `name_analysis` | วิเคราะห์ชื่อเชิงความหมาย | Reflective meaning and identity reading from name/nickname. | implemented |
-| `thai_taksa` | ทักษาปกรณ์ | Thai-style symbolic name/day reflection. No full traditional taksa calculation yet. | config only / symbolic implementation |
-| `lucky_phone` | วิเคราะห์เบอร์เชิงพลังงาน | Reflective phone number pattern reading without guaranteed outcomes. | implemented, symbolic |
-| `feng_shui` | ฮวงจุ้ยเชิงบรรยากาศ | Practical space/room/desk reflection using light, clutter, airflow, focus, and rest. | implemented |
-| `i_ching` | I Ching Reflection | Reflection on change, timing, waiting, and decisions. No hexagram engine yet. | config only / symbolic implementation |
-| `human_design` | Human Design Reflection | Reflection on energy style and decision style. No full chart engine yet. | config only / symbolic implementation |
-| `decision_companion` | เพื่อนช่วยตัดสินใจ | Helps users reflect on difficult choices without deciding for them. | implemented |
-| `relationship_mirror` | กระจกความสัมพันธ์ | Love, attachment, boundaries, and emotional pattern reflection. | implemented |
-| `career_reflection` | เข็มทิศเรื่องงาน | Career uncertainty, strengths, pressure, and next-step reflection. | implemented |
-| `money_reflection` | ความสัมพันธ์กับเงิน | Money anxiety, spending patterns, and financial self-reflection without financial advice. | implemented |
+| `daily_light` | แสงนำทางวันนี้ | Daily reflection, mood, energy, small action. | implemented |
+| `tarot` | ไพ่สะท้อนใจ | Symbolic card reading. | implemented |
+| `oracle` | Oracle Message | Gentle spiritual guidance. | implemented |
+| `numerology` | เลขศาสตร์ชีวิต | Symbolic number-based reflection. | implemented |
+| `name_analysis` | วิเคราะห์ชื่อเชิงความหมาย | Reflective name meaning and identity. | implemented |
+| `thai_taksa` | ทักษาปกรณ์ | Thai symbolic name/day reflection. | implemented |
+| `lucky_phone` | วิเคราะห์เบอร์เชิงพลังงาน | Reflective phone number reading. | implemented |
+| `feng_shui` | ฮวงจุ้ยเชิงบรรยากาศ | Practical space and environment reflection. | implemented |
+| `i_ching` | I Ching Reflection | Reflective decision and timing reading. | implemented |
+| `human_design` | Human Design Reflection | Symbolic energy-style reflection. | implemented |
+| `decision_companion` | เพื่อนช่วยตัดสินใจ | Helps compare choices gently. | implemented |
+| `relationship_mirror` | กระจกความสัมพันธ์ | Love, attachment, boundaries, and emotional pattern. | implemented |
+| `career_reflection` | เข็มทิศเรื่องงาน | Career reflection and next steps. | implemented |
+| `money_reflection` | ความสัมพันธ์กับเงิน | Money anxiety and spending pattern reflection. | implemented |
 
 ## 6. AI Prompt System Changes
 
-Prompt-related files:
+Prompts are located in:
 
 - `lib/ai/reading-prompts.ts`
 - `lib/ai/reading-modes.ts`
 - `lib/ai/reading-style.ts`
 - `lib/ai/reading-schema.ts`
 - `lib/ai/safety-rules.ts`
-- Existing legacy prompt file: `lib/prompts/system.ts`
 
 How prompts are built:
 
-- `buildReadingPrompt()` accepts mode, category, tone profile, user input, user profile, and recent context.
-- The prompt identifies PaoLuminis as an AI Spiritual Reflection Companion.
-- It tells the model to use spiritual symbols as mirrors, not deterministic predictions.
-- It includes mode purpose, response sections, safety notes, tone vocabulary, banned vocabulary, style guidance, profile context, recent context, and user input.
-- It requires structured JSON output matching `readingResponseShape`.
-
-How reading mode affects the prompt:
-
-- Each mode provides its own label, purpose, allowed categories, input fields, response sections, safety notes, and tone profile.
-- The selected mode controls the prompt's reading purpose and safety framing.
-
-How tone profile affects the response:
-
-- Tone profiles define preferred vocabulary, banned vocabulary, sentence length, emotional intensity, example style guidance, and safety caution.
-- Examples: tarot/oracle use `warm_mystic`; feng shui/money/career use `practical_calm`; relationship/decision use `direct_but_kind`.
+- The selected mode controls the purpose, allowed categories, input fields, safety notes, and response structure.
+- Tone profiles control vocabulary, banned vocabulary, sentence length, emotional intensity, and style guidance.
+- The prompt keeps Thai-first phrasing and instructs the model not to be deterministic, fear-based, or advisory outside the spiritual-reflection scope.
 
 Structured output expected:
 
-- `title`
-- `opening`
-- `symbolicMessage`
-- `emotionalReflection`
-- `psychologicalLens`
-- `gentleAdvice`
-- `reflectionQuestions`
-- `microAction`
-- `closing`
-- `safetyNote`
-- `modeDetails`
+```json
+{
+  "title": "string",
+  "opening": "string",
+  "symbolicMessage": "string",
+  "emotionalReflection": "string",
+  "psychologicalLens": "string",
+  "gentleAdvice": "string",
+  "reflectionQuestions": ["string"],
+  "microAction": "string",
+  "closing": "string",
+  "safetyNote": "string",
+  "modeDetails": {
+    "mainSymbol": "string",
+    "numberPattern": "string",
+    "spaceObservation": "string",
+    "decisionFrame": "string"
+  }
+}
+```
 
-Gemini model configuration:
+Gemini model names are still environment-driven through:
 
-- `GEMINI_DAILY_MODEL` is used for `daily_light`.
-- `GEMINI_ASK_MODEL` is used for reading modes such as tarot, oracle, astrology, numerology, name analysis, feng shui, decision, relationship, career, and money.
-- `GEMINI_JOURNAL_MODEL` remains used by journal reflection.
-- No API keys are exposed in code.
+- `GEMINI_DAILY_MODEL`
+- `GEMINI_ASK_MODEL`
+- `GEMINI_JOURNAL_MODEL`
 
 ## 7. Thai Language and Brand Voice Improvements
 
-The update improves Thai wording by shifting the product from "Ask AI" toward a warmer "แสงนำทาง" and "คำอ่านนี้เป็นแนวสะท้อนใจ" experience.
+The UI and prompt copy now uses brand-aligned phrasing such as:
 
-Brand-aligned language now appears in prompts, fallbacks, and UI:
+- “อาจสะท้อนว่า...”
+- “นี่เป็นเพียงกระจกหนึ่งบาน”
+- “คุณยังมีสิทธิ์เลือก”
+- “คำอ่านนี้เป็นแนวสะท้อนใจ ไม่ใช่คำตัดสินอนาคตแบบตายตัว”
 
-- "อาจสะท้อนว่า..."
-- "นี่เป็นเพียงกระจกหนึ่งบาน"
-- "คุณยังมีสิทธิ์เลือก"
-- "คำอ่านนี้เป็นแนวสะท้อนใจ ไม่ใช่คำตัดสินอนาคตแบบตายตัว"
-- "ใช้ไพ่เป็นกระจก ไม่ใช่กรงขัง"
-
-The app now explicitly avoids:
+The app avoids:
 
 - deterministic fortune telling
 - fear-based language
-- curse/karma pressure
+- curse or karma pressure
 - guaranteed predictions
 - medical/legal/financial claims
-- telling users what will happen with certainty
-- telling users to rely on readings instead of their own judgment
 
 ## 8. UI / UX Changes
 
 Ask page:
 
-- `/ask` now introduces the experience as "แสงนำทาง".
-- Copy tells users to choose the reading mode that matches their current question.
+- `app/(app)/ask/page.tsx` now introduces the page as a reflective reading experience.
 
 Reading mode selector:
 
-- `components/ai-panels.tsx` displays reading mode cards.
-- Cards show Thai label, short description, and tone profile label.
-- The layout uses a mobile-first grid with a two-column layout on larger screens.
+- `components/ai-panels.tsx` shows selectable cards for all reading modes.
+- Cards show Thai label, short description, and tone profile.
+- Layout is mobile-first and becomes two-column on larger screens.
 
 Dynamic input fields:
 
-- Inputs are driven by `lib/ai/reading-modes.ts`.
-- Modes can require text, textarea, date, telephone, select, or number fields.
+- Inputs change based on the selected mode.
+- Required fields are mode-aware.
+- Category choices are limited to the selected mode's allowed categories.
 
 Response display:
 
-- `ReflectionView` now supports camelCase reading sections.
-- Arrays such as reflection questions are rendered as separate list items.
-- Nested `modeDetails` render as grouped detail blocks.
+- Structured responses render as separated cards.
+- Arrays render as lists.
+- Nested `modeDetails` render as grouped blocks.
 
-Save insight flow:
+Save insight:
 
-- Generated readings still show a "เก็บคำอ่านนี้" button.
-- The save flow continues to use `/saved?reading_id=...` and the existing `saved_insights` table.
+- The reading can be saved with a Thai button: “เก็บคำอ่านนี้”.
+- The flow uses the existing `saveInsight` server action and returns the user to `/saved` with a confirmation message.
 
 Empty states:
 
-- History empty copy now references "เปิดแสงนำทาง".
-- Existing saved/journal empty states remain in place.
+- Ask has a gentle empty state before any reading is generated.
+- Saved and history already have Thai empty states.
 
-Thai labels:
+Loading / safety text:
 
-- Navigation labels now use "แสงนำทาง", "ไพ่สะท้อนใจ", and "สิ่งที่เก็บไว้".
-- Admin recent readings now show Thai reading type labels where available.
-- History uses `readingTypeLabels` from `lib/labels.ts`.
+- Submit button text shows “กำลังฟังคำถามของคุณ...”.
+- The safety note appears under the submit area.
 
-Loading text:
+Navigation labels:
 
-- Ask flow loading text is now "กำลังฟังคำถามของคุณ...".
-
-Safety note:
-
-- The Ask form displays the selected mode's safety note under the submit button.
+- Updated Thai-first labels are visible in the nav bar, including แสงนำทาง, สิ่งที่เก็บไว้, and บันทึกใจ.
 
 ## 9. Backend / API Changes
 
-API routes added:
+API route:
 
 - `POST /api/readings/generate`
 
-API routes still present:
+Flow:
 
-- `POST /api/ai/ask`
-- `POST /api/ai/daily-light`
-- `POST /api/ai/journal-reflect`
-- `POST /api/ai/tarot`
-
-Input validation:
-
-- `readingGenerateSchema` validates mode, category, and input payload.
-- Required fields are checked per reading mode.
-- Categories are checked against the selected mode's allowed categories.
-
-Authentication checks:
-
-- `getUserOrThrow()` is used by the new API route.
-- Unauthenticated users receive the existing API error response.
-
-Usage limit checks:
-
-- `daily_light` mode maps to `daily_light` usage limits.
-- All other reading modes currently map to `ask_ai` usage limits.
-- Usage is recorded in `usage_events`.
-
-AI generation flow:
-
-1. Validate request body with zod.
-2. Authenticate user.
-3. Run safety checker.
-4. Enforce usage limit.
-5. Fetch reflection context, including recent questions.
-6. Save request context into `questions`.
-7. Build mode-aware prompt.
-8. Call Gemini server-side through `generateReadingResponse()`.
-9. Parse/validate structured JSON response.
-10. Save generated reading into `readings`.
-11. Record usage event.
-12. Return reading JSON to the client.
-
-Supabase insert/select/update flow:
-
-- Reads user/profile/context through server-side Supabase client.
-- Inserts into `questions`.
-- Inserts into `readings`.
-- Inserts into `usage_events`.
-- Inserts into `safety_logs` when caution/block is detected.
+1. Validate request with zod.
+2. Check auth.
+3. Run reading-specific safety rules.
+4. Enforce usage limits.
+5. Fetch user context.
+6. Save question metadata to `questions`.
+7. Build prompt from mode + tone + context.
+8. Call Gemini server-side.
+9. Parse structured JSON response.
+10. Save reading to `readings`.
+11. Record usage in `usage_events`.
 
 Error handling:
 
-- Invalid JSON request returns "รูปแบบ JSON ไม่ถูกต้อง".
-- Unauthorized access returns "กรุณาเข้าสู่ระบบก่อน".
-- Validation failures return Thai user-facing messages.
-- Gemini missing key or Gemini failure falls back to safe sample reading content.
+- Validation errors return Thai messages.
+- Safety blocks return a safe Thai explanation.
+- API failures use the existing generic API error handler.
+- Gemini output has fallback parsing if JSON is invalid.
 
 ## 10. Database / Supabase Changes
 
 No database migration was added in this update.
 
-Tables changed:
+The implementation reuses existing tables:
 
-- None.
+- `questions`
+- `readings`
+- `usage_events`
+- `saved_insights`
+- `safety_logs`
 
-New columns:
-
-- None.
-
-RLS policy changes:
-
-- None.
-
-Migration requirement:
-
-- No new migration has to be manually run for this specific update.
-- The existing migration `supabase/migrations/20260610120000_initial_schema.sql` still defines the required tables, RLS, and tarot card seed data.
-
-Important implementation note:
-
-- New reading modes are stored using the existing `readings.type` text column.
-- New structured AI output is stored in the existing `readings.content` jsonb column.
-- This keeps the update lightweight and avoids unnecessary schema churn.
+No new columns or RLS policies were required.
 
 ## 11. Safety Improvements
 
-Self-harm:
+The current safety stack covers:
 
-- Self-harm and suicidal terms are blocked.
-- The app returns a crisis-safe supportive message and avoids spiritual prediction.
+- self-harm
+- death prediction
+- accident prediction
+- curse or fear-based questions
+- medical/legal/financial advice
+- gambling and investment-style requests
+- deterministic predictions
+- repeated emotional dependency questions
 
-Death prediction:
+Implementation notes:
 
-- Death-related prompts are flagged as `fatalistic_prediction` with caution.
-- Prompts instruct the AI not to make death claims or deterministic predictions.
+- `lib/safety/check.ts` handles the baseline keyword checks.
+- `lib/ai/safety-rules.ts` adds reading-specific hard blocks.
+- `app/api/readings/generate/route.ts` uses those reading-specific rules before calling Gemini.
 
-Accident prediction:
+Current limitations:
 
-- Accident-related prompts are flagged as `fatalistic_prediction` with caution.
-- A safety test now covers "จะเกิดอุบัติเหตุไหม".
-
-Curse/fear-based questions:
-
-- Curse, bad luck, heavy karma, guaranteed outcomes, and fear-based language are detected as caution-level or included in banned prompt guidance.
-- Prompts and fallbacks avoid curse/karma pressure.
-
-Medical/legal/financial advice:
-
-- Keywords for diagnosis, pregnancy, lawsuits, contracts, investment, stocks, crypto, and finance trigger caution.
-- Prompts instruct Gemini not to provide specific medical, legal, financial, or investment instructions.
-
-Gambling or investment decisions:
-
-- Investment-related prompts are caught by financial keyword safety.
-- Gambling-specific terms are included in `lib/ai/safety-rules.ts` as banned topics, but the keyword checker is still limited and should be expanded for Thai gambling terms.
-
-Repeated emotional dependency questions:
-
-- Recent questions are fetched into AI context.
-- The prompt builder adds repeated-question redirection guidance when similar questions recur.
-- This is a prompt-level mitigation, not a hard block.
-
-Current safety limitations:
-
-- Safety detection is still primarily keyword-based.
-- It may miss indirect, slang, misspelled, or highly contextual unsafe prompts.
-- It does not yet use a dedicated safety classifier model.
-- Repeated-question handling is simple and may over-trigger when category matches and the question is long.
+- Safety remains keyword-based.
+- Misspellings, slang, or indirect phrasing may still slip through.
 
 ## 12. Testing Results
 
 | Check | Result | Notes |
-| ----- | ------ | ----- |
-| `pnpm lint` | pass | `next lint` completed with no ESLint warnings or errors. Next.js reports `next lint` is deprecated for future Next.js versions. |
-| `pnpm typecheck` | pass | `tsc --noEmit` completed successfully. |
-| `pnpm build` | pass | `next build` compiled successfully and generated 19 app routes, including `/api/readings/generate` and `/ask`. |
+| ---- | ------ | ----- |
+| `pnpm lint` | pass | No ESLint warnings or errors. |
+| `pnpm typecheck` | pass | TypeScript checks cleanly. |
+| `pnpm build` | pass | Build succeeded. A webpack cache ENOSPC warning appeared, but the build completed successfully. |
 
-Automated tests do exist in the repository:
+Automated tests:
 
-- `tests/safety.test.ts`
-- `tests/timezone.test.ts`
 - `tests/validation.test.ts`
 - `tests/reading-schema.test.ts`
-
-The user-requested checks for this report were lint, typecheck, and build.
+- `tests/timezone.test.ts`
+- `tests/safety.test.ts`
 
 ## 13. Manual QA Checklist
 
-- [ ] Create account / login with Google OAuth.
-- [ ] Create account / login with email magic link.
-- [ ] Complete onboarding.
-- [ ] Generate Daily Light at `/today`.
-- [ ] Confirm Daily Light only generates once per Thailand day.
-- [ ] Open `/ask`.
-- [ ] Select ไพ่สะท้อนใจ and generate a reading.
-- [ ] Select Oracle Message and generate a reading.
-- [ ] Select เลขศาสตร์ชีวิต and test required birth date validation.
-- [ ] Select วิเคราะห์ชื่อเชิงความหมาย and test name/question fields.
-- [ ] Select วิเคราะห์เบอร์เชิงพลังงาน and test phone number input.
-- [ ] Select ฮวงจุ้ยเชิงบรรยากาศ and test room/space fields.
-- [ ] Select กระจกความสัมพันธ์ and test relationship status field.
-- [ ] Save an insight from a generated reading.
-- [ ] Confirm saved insight appears at `/saved`.
-- [ ] Confirm generated reading appears at `/history`.
-- [ ] Write a journal entry at `/journal`.
-- [ ] Request journal AI reflection.
-- [ ] Draw tarot card at `/tarot`.
-- [ ] Confirm logout clears session.
-- [ ] Visit `/admin` as non-admin and confirm access is blocked/redirected.
-- [ ] Visit `/admin` as admin and confirm metrics show without full journal body exposure.
-- [ ] Check mobile layout on small phone width.
-- [ ] Ask a self-harm question and confirm it is blocked supportively.
-- [ ] Ask a medical/legal/financial question and confirm it is redirected cautiously.
-- [ ] Ask a fatalistic question about death/accident/curse and confirm no fear-based prediction is generated.
+- [ ] Open `/ask` on mobile width.
+- [ ] Select a reading mode card.
+- [ ] Confirm category options change with the mode.
+- [ ] Confirm mode-specific fields appear and disappear correctly.
+- [ ] Submit a tarot or oracle request.
+- [ ] Submit a numerology request with birth date.
+- [ ] Submit a name analysis request with name and nickname.
+- [ ] Submit a lucky phone request.
+- [ ] Submit a feng shui request.
+- [ ] Submit a relationship mirror request.
+- [ ] Confirm loading text shows while waiting.
+- [ ] Confirm structured response cards appear.
+- [ ] Confirm reflection questions render as a list.
+- [ ] Confirm mode details render as nested blocks when present.
+- [ ] Click “เก็บคำอ่านนี้” and confirm the save flow reaches `/saved`.
+- [ ] Confirm the saved insight appears in `/saved`.
+- [ ] Confirm the reading appears in `/history`.
+- [ ] Confirm empty states appear before reading generation.
+- [ ] Test a blocked safety prompt such as gambling, curse, or fatalistic prediction.
+- [ ] Test logout and return to login.
 
 ## 14. Known Limitations
 
-- Some modes are symbolic only and do not perform full traditional calculation.
-- There is no full astrology birth chart engine yet.
-- There is no full Human Design chart engine yet.
-- There is no full Thai taksa calculation engine yet.
-- There is no I Ching hexagram engine yet.
-- Numerology is currently prompt-driven/symbolic, not a deterministic calculator.
-- Lucky phone reading is reflective and does not calculate traditional commercial phone-number formulas.
-- Safety detection is still keyword-based.
-- Repeated-question handling is prompt-level and simple.
-- There is no payment system.
-- There is no marketplace.
-- There is no human reader booking.
-- There is no full moderation dashboard.
+- Astrology, Thai taksa, I Ching, and Human Design remain symbolic/reflection modes rather than full calculation engines.
+- Lucky phone is reflective, not a traditional guaranteed luck calculator.
+- The save flow uses the existing server action redirect rather than a true toast library.
+- Safety is still keyword-driven.
+- No payment, marketplace, or human reader booking has been added.
 
 ## 15. Environment Variables
 
-Required environment variable names used by the project:
+Used environment variable names:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
@@ -438,52 +330,40 @@ Required environment variable names used by the project:
 - `NEXT_PUBLIC_SITE_URL`
 - `APP_TIMEZONE`
 
-No real values, tokens, or secrets are included in this report.
-
 ## 16. Deployment Notes
 
-Before deploying or testing on Vercel Preview, check:
+Before Vercel Preview or production:
 
-- Vercel environment variables are set for Supabase, Gemini, admin emails, site URL, and timezone.
-- Supabase migration `20260610120000_initial_schema.sql` has been run in the target Supabase project.
-- Supabase RLS policies are present after migration.
-- Supabase Auth redirect URLs include the Vercel Preview URL and production URL.
-- Google OAuth callback URL is configured in Google Cloud and Supabase Auth provider settings.
-- `NEXT_PUBLIC_SITE_URL` matches the deployed site URL for auth redirects.
-- Gemini API key is valid and only stored as a server-side environment variable.
-- Production build passes locally or in CI.
-- Custom domain is connected before public launch.
-- Cloudflare DNS points to the correct Vercel target if Cloudflare is used.
+- Set all environment variables in Vercel.
+- Confirm Supabase auth redirect URLs are configured.
+- Confirm Supabase migration is already applied.
+- Confirm Gemini API key is server-side only.
+- Confirm `NEXT_PUBLIC_SITE_URL` matches the deployed site.
+- Confirm the build passes in the deployment environment.
 
 ## 17. Recommended Next Steps
 
 ### P0
 
-Critical items before public launch:
-
-1. Run full manual QA on Vercel Preview, especially login, onboarding, Ask/Reading Mode, save, history, journal, and safety flows.
-2. Confirm Supabase production migration and RLS policies are applied exactly once.
-3. Verify all production environment variables are set in Vercel and no secrets are exposed to the browser.
+1. Run browser QA for `/ask` on Vercel Preview.
+2. Verify save flow and `/saved` redirect messaging.
+3. Verify safety blocks for gambling, curse, and fatalistic prompts in the browser.
 
 ### P1
 
-Important improvements after staging works:
-
-1. Add browser/end-to-end tests for auth, onboarding, Ask mode generation, save insight, and history.
-2. Expand safety detection beyond keyword matching, especially for gambling, stalking, self-harm variants, and Thai slang.
-3. Add lightweight deterministic helpers for simple numerology calculations while keeping language non-fatalistic.
+1. Add a small toast system if product wants true transient confirmations.
+2. Improve safety beyond keyword matching.
+3. Add deeper per-mode examples and mode education copy.
 
 ### P2
 
-Future product improvements:
-
-1. Add optional calculation engines for astrology, Thai taksa, I Ching, or Human Design, with clear disclaimers about symbolic interpretation.
-2. Add admin moderation workflows for safety logs and reading quality review.
-3. Add analytics dashboards for mode usage, retention, and saved insight patterns without exposing private journal content.
+1. Add simple calculation engines for numerology or astrology if needed.
+2. Add richer analytics for mode usage and save patterns.
+3. Add more guidance pages for what each reading mode is best for.
 
 ## 18. Final Status
 
 Ready for staging testing.
 
-Reason: the latest reading mode implementation is committed, the workspace is clean, no database migration is required for this update, and `pnpm lint`, `pnpm typecheck`, and `pnpm build` all pass.
+Reason: the Ask page now supports interactive reading-mode selection, dynamic fields, structured responses, safety notes, and save flow on top of a build that passes lint, typecheck, and production build.
 

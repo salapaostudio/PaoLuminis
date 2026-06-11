@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { saveInsight } from "@/app/(app)/actions";
 import { ReflectionView } from "@/components/ui";
-import { readingCategoryIds, readingModeMap, readingModes, type ReadingCategory, type ReadingModeId } from "@/lib/ai/reading-modes";
+import { readingModeMap, readingModes, type ReadingCategory, type ReadingModeId } from "@/lib/ai/reading-modes";
 import { readingCategoryLabel } from "@/lib/ai/reading-schema";
 import { toneProfiles } from "@/lib/ai/reading-style";
 import { Field, inputClass } from "@/components/ui";
@@ -48,7 +49,7 @@ export function DailyLightPanel() {
       </button>
       {state.error ? <p className="rounded-[8px] bg-white/70 p-3 text-sm text-red-700">{state.error}</p> : null}
       {state.reading ? <ReflectionView content={state.reading.content} /> : null}
-      {state.reading ? <SaveReadingButton readingId={state.reading.id} /> : null}
+      {state.reading ? <SaveReadingForm readingId={state.reading.id} /> : null}
     </div>
   );
 }
@@ -56,12 +57,13 @@ export function DailyLightPanel() {
 export function AskPanel() {
   const [mode, setMode] = useState<ReadingModeId>("tarot");
   const modeConfig = readingModeMap[mode];
-  const [category, setCategory] = useState<ReadingCategory>("self");
+  const [category, setCategory] = useState<ReadingCategory>(modeConfig.allowedCategories[0] ?? "self");
   const [values, setValues] = useState<Record<string, string>>({});
   const [state, setState] = useState<ApiState>({});
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
+    setCategory((current) => (modeConfig.allowedCategories.includes(current) ? current : modeConfig.allowedCategories[0] ?? "self"));
     setValues((current) => {
       const next: Record<string, string> = {};
       modeConfig.inputFields.forEach((field) => {
@@ -73,6 +75,7 @@ export function AskPanel() {
 
   const modeTone = toneProfiles[modeConfig.toneProfile];
   const selectedFields = modeConfig.inputFields;
+  const selectedCategories = modeConfig.allowedCategories;
 
   function updateField(name: string, value: string) {
     setValues((current) => ({ ...current, [name]: value }));
@@ -127,7 +130,7 @@ export function AskPanel() {
           onChange={(event) => setCategory(event.target.value as ReadingCategory)}
           className={inputClass}
         >
-          {readingCategoryIds.map((value) => (
+          {selectedCategories.map((value) => (
             <option key={value} value={value}>
               {readingCategoryLabel(value)}
             </option>
@@ -144,6 +147,7 @@ export function AskPanel() {
       <div className="grid gap-4">
         {selectedFields.map((field) => (
           <Field key={field.name} label={field.labelTh}>
+            {field.helperText ? <span className="text-xs font-normal text-midnight/55">{field.helperText}</span> : null}
             {field.type === "textarea" ? (
               <textarea
                 className={inputClass}
@@ -181,21 +185,30 @@ export function AskPanel() {
         ))}
       </div>
 
-      <button className="rounded-full bg-midnight px-5 py-3 text-sm font-semibold text-cream shadow-glow disabled:opacity-60" disabled={pending}>
-        {pending ? "กำลังฟังคำถามของคุณ..." : "เปิดคำอ่าน"}
-      </button>
-
-      <p className="text-xs leading-5 text-midnight/55">
-        {modeConfig.safetyNotes[0] ?? "คำอ่านนี้ใช้เพื่อการสะท้อนตัวเอง ไม่ใช่คำแนะนำทางการแพทย์ กฎหมาย การเงิน หรือการตัดสินใจแทนคุณ"}
-      </p>
+      <div className="grid gap-2">
+        <button className="inline-flex items-center justify-center gap-2 rounded-full bg-midnight px-5 py-3 text-sm font-semibold text-cream shadow-glow disabled:opacity-60" disabled={pending}>
+          {pending ? (
+            <>
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-cream/40 border-t-cream" />
+              <span>กำลังฟังคำถามของคุณ...</span>
+            </>
+          ) : (
+            "เปิดคำอ่าน"
+          )}
+        </button>
+        <p className="text-xs leading-5 text-midnight/55">
+          {modeConfig.safetyNotes[0] ?? "คำอ่านนี้ใช้เพื่อการสะท้อนตัวเอง ไม่ใช่คำแนะนำทางการแพทย์ กฎหมาย การเงิน หรือการตัดสินใจแทนคุณ"}
+        </p>
+      </div>
 
       {state.error ? <p className="rounded-[8px] bg-white/70 p-3 text-sm text-red-700">{state.error}</p> : null}
       {state.reading ? (
         <div className="grid gap-4">
           <ReflectionView content={state.reading.content} />
-          <SaveReadingButton readingId={state.reading.id} />
+          <SaveReadingForm readingId={state.reading.id} />
         </div>
       ) : null}
+      {!state.reading && !state.error ? <AskEmptyState /> : null}
     </form>
   );
 }
@@ -226,7 +239,7 @@ export function TarotPanel() {
       {state.card ? <p className="rounded-[8px] bg-mist p-4 font-semibold text-midnight">{state.card.name} · {state.card.archetype}</p> : null}
       {state.error ? <p className="rounded-[8px] bg-white/70 p-3 text-sm text-red-700">{state.error}</p> : null}
       {state.reading ? <ReflectionView content={state.reading.content} /> : null}
-      {state.reading ? <SaveReadingButton readingId={state.reading.id} /> : null}
+      {state.reading ? <SaveReadingForm readingId={state.reading.id} /> : null}
     </div>
   );
 }
@@ -254,18 +267,31 @@ export function JournalReflectButton({ journalId }: { journalId: string }) {
       </button>
       {state.error ? <p className="rounded-[8px] bg-white/70 p-3 text-sm text-red-700">{state.error}</p> : null}
       {state.reflection ? <ReflectionView content={state.reflection.content} /> : null}
-      {state.reading ? <SaveReadingButton readingId={state.reading.id} /> : null}
+      {state.reading ? <SaveReadingForm readingId={state.reading.id} /> : null}
     </div>
   );
 }
 
-function SaveReadingButton({ readingId }: { readingId: string }) {
+function AskEmptyState() {
   return (
-    <a
-      className="inline-flex w-fit rounded-full border border-midnight/15 bg-white/70 px-4 py-2 text-sm font-semibold text-midnight"
-      href={`/saved?reading_id=${readingId}`}
-    >
-      เก็บคำอ่านนี้
-    </a>
+    <div className="rounded-[8px] border border-dashed border-midnight/15 bg-white/50 p-4 text-sm leading-6 text-midnight/65">
+      ยังไม่มีคำอ่านที่บันทึกไว้ในหน้านี้ เลือกโหมดที่ตรงกับใจตอนนี้ แล้วพิมพ์เท่าที่คุณพร้อมก็พอ
+    </div>
+  );
+}
+
+function SaveReadingForm({ readingId }: { readingId: string }) {
+  return (
+    <form action={saveInsight} className="grid gap-2">
+      <input type="hidden" name="reading_id" value={readingId} />
+      <input type="hidden" name="label" value="แสงที่อยากเก็บไว้" />
+      <button
+        className="inline-flex w-fit items-center justify-center rounded-full border border-midnight/15 bg-white/70 px-4 py-2 text-sm font-semibold text-midnight"
+        type="submit"
+      >
+        เก็บคำอ่านนี้
+      </button>
+      <p className="text-xs leading-5 text-midnight/50">บันทึกแล้วจะพาคุณไปหน้า สิ่งที่เก็บไว้ เพื่อยืนยันการบันทึก</p>
+    </form>
   );
 }
