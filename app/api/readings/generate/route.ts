@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { generateReadingResponse } from "@/lib/ai/gemini";
+import { assessReadingSafety } from "@/lib/ai/safety-rules";
 import { apiError } from "@/lib/api";
 import { getReflectionContext, getUserOrThrow } from "@/lib/context";
-import { checkSafety } from "@/lib/safety/check";
 import { checkUsageLimit, recordUsage } from "@/lib/usage";
 import { readingCategoryLabel, readingGenerateSchema } from "@/lib/ai/reading-schema";
 import { readingModeMap } from "@/lib/ai/reading-modes";
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     const { supabase, user } = await getUserOrThrow();
     const modeConfig = readingModeMap[mode];
 
-    const safety = checkSafety(`${mode}\n${category}\n${flattenInputText(input)}`);
+    const safety = assessReadingSafety(`${mode}\n${category}\n${flattenInputText(input)}`);
     if (safety.status === "block") {
       await supabase.from("safety_logs").insert({
         user_id: user.id,
