@@ -54,7 +54,7 @@ export async function POST(request: Request) {
       .insert({
         user_id: user.id,
         type: "journal_reflection",
-        title: "Journal Reflection",
+        title: "สะท้อนบันทึกใจ",
         content,
         model_used: modelUsed,
         safety_status: safety.status,

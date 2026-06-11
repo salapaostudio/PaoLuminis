@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     }
 
     const usage = await checkUsageLimit(user.id, "ask_ai");
-    if (!usage.allowed) return NextResponse.json({ error: "วันนี้ใช้ Ask AI ครบ 3 ครั้งแล้ว ลองพักใจแล้วกลับมาใหม่พรุ่งนี้นะ" }, { status: 429 });
+    if (!usage.allowed) return NextResponse.json({ error: "วันนี้ถาม Luminis ครบ 3 ครั้งแล้ว ลองพักใจแล้วกลับมาใหม่พรุ่งนี้นะ" }, { status: 429 });
 
     const { data: savedQuestion, error: questionError } = await supabase
       .from("questions")
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
         user_id: user.id,
         question_id: savedQuestion.id,
         type: "ask_ai",
-        title: `Ask AI: ${category}`,
+        title: `ถาม Luminis: ${category}`,
         content,
         model_used: modelUsed,
         safety_status: safety.status,

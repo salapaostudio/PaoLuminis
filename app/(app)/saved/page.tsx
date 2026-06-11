@@ -23,7 +23,7 @@ export default async function SavedPage({
   return (
     <div className="grid gap-6">
       <div>
-        <p className="text-sm font-semibold text-gold">Saved Insights</p>
+        <p className="text-sm font-semibold text-gold">ที่บันทึกไว้</p>
         <h1 className="mt-2 text-3xl font-semibold text-midnight">แสงที่อยากเก็บไว้กลับมาอ่าน</h1>
       </div>
       {params.message ? <p className="rounded-[8px] bg-mist p-3 text-sm text-midnight/75">{params.message}</p> : null}
@@ -44,13 +44,13 @@ export default async function SavedPage({
       <div className="grid gap-4">
         {saved && saved.length > 0 ? saved.map((item) => (
           <Card key={item.id}>
-            <p className="text-sm font-semibold text-gold">{item.label ?? "Saved insight"} · {formatThaiDate(item.created_at)}</p>
+            <p className="text-sm font-semibold text-gold">{item.label ?? "แสงที่บันทึกไว้"} · {formatThaiDate(item.created_at)}</p>
             {item.note ? <p className="mt-2 text-sm text-midnight/60">{item.note}</p> : null}
             {item.readings?.content ? <div className="mt-4"><ReflectionView content={item.readings.content as Record<string, unknown>} /></div> : null}
           </Card>
         )) : (
           <Card>
-            <p className="text-sm leading-6 text-midnight/70">ยังไม่มี insight ที่บันทึกไว้ เมื่อเจอคำสะท้อนที่อยากกลับมาอ่าน ให้กดบันทึกจาก Daily Light, Ask AI หรือ Symbol Card ได้เลย</p>
+            <p className="text-sm leading-6 text-midnight/70">ยังไม่มี insight ที่บันทึกไว้ เมื่อเจอคำสะท้อนที่อยากกลับมาอ่าน ให้กดบันทึกจากแสงวันนี้ ถาม Luminis หรือการ์ดสัญลักษณ์ได้เลย</p>
           </Card>
         )}
       </div>

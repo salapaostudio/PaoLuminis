@@ -31,7 +31,7 @@ export default async function TodayPage() {
     <div className="grid gap-6">
       <div>
         <p className="text-sm font-semibold text-gold">{formatThaiDate(new Date())}</p>
-        <h1 className="mt-2 text-3xl font-semibold text-midnight">Daily Light ของ{profile.nickname ?? "คุณ"}</h1>
+        <h1 className="mt-2 text-3xl font-semibold text-midnight">แสงวันนี้ของ{profile.nickname ?? "คุณ"}</h1>
       </div>
       <Card>
         {daily ? (

@@ -49,7 +49,7 @@ export function DailyLightPanel() {
           })
         }
       >
-        {pending ? "กำลังเปิดแสง..." : "สร้าง Daily Light"}
+        {pending ? "กำลังเปิดแสง..." : "สร้างแสงวันนี้"}
       </button>
       {state.error ? <p className="rounded-[8px] bg-white/70 p-3 text-sm text-red-700">{state.error}</p> : null}
       {state.reading ? <ReflectionView content={state.reading.content} /> : null}
@@ -121,7 +121,7 @@ export function TarotPanel() {
           })
         }
       >
-        {pending ? "กำลังจั่ว..." : "จั่ว Symbol Card"}
+        {pending ? "กำลังจั่ว..." : "จั่วการ์ดสัญลักษณ์"}
       </button>
       {state.card ? <p className="rounded-[8px] bg-mist p-4 font-semibold text-midnight">{state.card.name} · {state.card.archetype}</p> : null}
       {state.error ? <p className="rounded-[8px] bg-white/70 p-3 text-sm text-red-700">{state.error}</p> : null}
@@ -150,7 +150,7 @@ export function JournalReflectButton({ journalId }: { journalId: string }) {
           })
         }
       >
-        {pending ? "กำลังสะท้อน..." : "Reflect with AI"}
+        {pending ? "กำลังสะท้อน..." : "ให้ AI สะท้อนความรู้สึก"}
       </button>
       {state.error ? <p className="rounded-[8px] bg-white/70 p-3 text-sm text-red-700">{state.error}</p> : null}
       {state.reflection ? <ReflectionView content={state.reflection.content} /> : null}

@@ -15,7 +15,34 @@ export default async function AdminPage() {
     .split(",")
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean);
+  if (admins.length === 0) {
+    return (
+      <main className="mx-auto max-w-3xl px-4 py-8">
+        <Card>
+          <p className="text-sm font-semibold text-gold">Admin</p>
+          <h1 className="mt-2 text-3xl font-semibold text-midnight">ยังไม่ได้ตั้งค่าผู้ดูแลระบบ</h1>
+          <p className="mt-3 text-sm leading-6 text-midnight/70">
+            กรุณาตั้งค่า `ADMIN_EMAILS` ใน environment variables ก่อนใช้งานหน้า admin
+          </p>
+        </Card>
+      </main>
+    );
+  }
   if (!admins.includes(user.email.toLowerCase())) redirect("/today");
+
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return (
+      <main className="mx-auto max-w-3xl px-4 py-8">
+        <Card>
+          <p className="text-sm font-semibold text-gold">Admin</p>
+          <h1 className="mt-2 text-3xl font-semibold text-midnight">Admin ยังไม่พร้อมใช้งาน</h1>
+          <p className="mt-3 text-sm leading-6 text-midnight/70">
+            กรุณาตั้งค่า `SUPABASE_SERVICE_ROLE_KEY` ฝั่ง server ก่อน เพื่อดูสถิติระบบอย่างปลอดภัย
+          </p>
+        </Card>
+      </main>
+    );
+  }
 
   const admin = createAdminClient();
   const [profiles, readings, journals, safety, recent] = await Promise.all([

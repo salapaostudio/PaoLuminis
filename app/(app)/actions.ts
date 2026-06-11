@@ -5,6 +5,12 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { journalSchema, saveInsightSchema } from "@/lib/validation";
 
+export async function signOut() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect("/login");
+}
+
 export async function saveInsight(formData: FormData) {
   const supabase = await createClient();
   const {

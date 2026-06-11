@@ -1,12 +1,13 @@
 import Link from "next/link";
+import { signOut } from "@/app/(app)/actions";
 
 const links = [
-  ["/today", "Daily Light"],
-  ["/ask", "Ask AI"],
-  ["/tarot", "Symbol Card"],
-  ["/journal", "Journal"],
-  ["/saved", "Saved"],
-  ["/history", "History"],
+  ["/today", "แสงวันนี้"],
+  ["/ask", "ถาม Luminis"],
+  ["/tarot", "การ์ดสัญลักษณ์"],
+  ["/journal", "บันทึกใจ"],
+  ["/saved", "ที่บันทึกไว้"],
+  ["/history", "ประวัติ"],
 ];
 
 export function Nav() {
@@ -21,6 +22,11 @@ export function Nav() {
             {label}
           </Link>
         ))}
+        <form action={signOut} className="ml-auto shrink-0">
+          <button className="rounded-full border border-midnight/10 bg-white/50 px-3 py-2 text-sm text-midnight/70 hover:bg-white">
+            ออกจากระบบ
+          </button>
+        </form>
       </nav>
     </header>
   );

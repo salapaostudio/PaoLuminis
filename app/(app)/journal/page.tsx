@@ -24,7 +24,7 @@ export default async function JournalPage({
   return (
     <div className="grid gap-6">
       <div>
-        <p className="text-sm font-semibold text-gold">Reflection Journal</p>
+        <p className="text-sm font-semibold text-gold">บันทึกใจ</p>
         <h1 className="mt-2 text-3xl font-semibold text-midnight">เขียนเพื่อได้ยินเสียงของตัวเอง</h1>
       </div>
       <Card>
@@ -38,7 +38,7 @@ export default async function JournalPage({
           <Field label="บันทึก">
             <textarea className={inputClass} name="body" rows={7} required />
           </Field>
-          <SubmitButton>บันทึก Journal</SubmitButton>
+          <SubmitButton>บันทึกใจ</SubmitButton>
         </form>
         {params.message ? <p className="mt-4 rounded-[8px] bg-mist p-3 text-sm text-midnight/75">{params.message}</p> : null}
       </Card>

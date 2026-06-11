@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const { cardId, intention } = parsed.data;
     const { supabase, user } = await getUserOrThrow();
     const usage = await checkUsageLimit(user.id, "tarot");
-    if (!usage.allowed) return NextResponse.json({ error: "วันนี้จั่ว Symbol Card ครบ 3 ครั้งแล้ว ลองอยู่กับไพ่ใบล่าสุดก่อนนะ" }, { status: 429 });
+    if (!usage.allowed) return NextResponse.json({ error: "วันนี้จั่วการ์ดสัญลักษณ์ครบ 3 ครั้งแล้ว ลองอยู่กับการ์ดใบล่าสุดก่อนนะ" }, { status: 429 });
 
     const safety = checkSafety(intention);
     if (safety.status === "block") {

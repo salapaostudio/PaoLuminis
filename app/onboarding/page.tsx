@@ -58,7 +58,7 @@ export default async function OnboardingPage({
           <Field label="คำถามชีวิตที่อยู่กับคุณตอนนี้">
             <textarea className={inputClass} name="current_life_question" rows={4} required />
           </Field>
-          <SubmitButton>บันทึกและไป Daily Light</SubmitButton>
+          <SubmitButton>บันทึกและไปแสงวันนี้</SubmitButton>
         </form>
       </Card>
     </main>

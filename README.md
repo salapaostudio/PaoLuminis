@@ -202,6 +202,7 @@ GEMINI_ASK_MODEL=gemini-2.5-flash
 GEMINI_JOURNAL_MODEL=gemini-2.5-flash
 GEMINI_SAFETY_MODEL=gemini-2.5-flash-lite
 ADMIN_EMAILS=
+APP_TIMEZONE=Asia/Bangkok
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
@@ -211,6 +212,7 @@ Notes:
 - `SUPABASE_SERVICE_ROLE_KEY` must never be exposed to the browser.
 - `GEMINI_API_KEY` must never be exposed to the browser.
 - `ADMIN_EMAILS` is a comma-separated list, for example `founder@example.com,admin@example.com`.
+- `APP_TIMEZONE` controls daily usage reset boundaries. The MVP default is `Asia/Bangkok`.
 - `.env.local` is ignored by git.
 - `.env.example` must contain placeholders only, never real secrets.
 
@@ -254,6 +256,7 @@ Useful checks:
 ```bash
 corepack pnpm lint
 corepack pnpm typecheck
+corepack pnpm test
 corepack pnpm build
 ```
 
@@ -410,6 +413,8 @@ Free MVP usage limits:
 - `ask_ai`: 3 per day
 - `journal_reflection`: 1 per day
 - `tarot`: 3 per day
+
+Daily limits reset at midnight in `APP_TIMEZONE`, which defaults to Thailand time (`Asia/Bangkok`).
 
 Recommended production additions:
 
